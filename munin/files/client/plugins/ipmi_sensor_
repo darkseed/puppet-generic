@@ -1,0 +1,253 @@
+#!/usr/bin/ruby
+#
+# Copyright (c) 2006 Peter Palfrader
+#
+#%# family=auto
+#%# capabilities=autoconf suggest
+#
+#
+#
+# ipmitool probably needs to be run as root, and it may take more than 10 seconds on some hosts.
+#
+# Add the following to your /etc/munin/plugin-conf.d/munin-node:
+# [ipmi_sensor_*]
+# user root
+# timeout 20
+#
+
+require 'yaml';
+
+VALID_UNITS = %w{volts degrees_c rpm amps watts}
+
+CACHEDIR = "/var/lib/munin/plugin-state"
+CACHEFILE = "plugin-ipmi_sensor.cache"
+CACHE_AGE = 275
+IPMITOOL = '/usr/bin/ipmitool'
+
+Thread.abort_on_exception = true
+
+def bail_out(m)
+	STDERR.puts "#{$0}: #{m}"
+	exit 1
+end
+def normalize_sensor(s)
+	s = s.downcase
+	s = s.tr('-', 'M')
+	s = s.tr('+', 'P')
+	s.tr('^a-zA-Z0-9', '_')
+end
+def normalize_unit(s)
+	s.downcase.tr('^a-z0-9', '_')
+end
+def normalize_thresholds(min, max)
+	min = min == "na" ? "" : min.to_f.round
+	max = max == "na" ? "" : max.to_f.round
+	"#{min}:#{max}"
+end
+def fetch_cache
+	fn = CACHEDIR+"/"+CACHEFILE
+	return nil unless FileTest.exists? fn
+	cache = YAML::load( File.open(fn) )
+	return nil unless cache
+	return nil unless cache[:version] == 1
+	return nil if Time.now - cache[:timestamp] > CACHE_AGE
+	return cache[:data]
+end
+def write_cache(data)
+	fn = CACHEDIR+"/"+CACHEFILE
+	return unless FileTest.directory? CACHEDIR
+	return unless FileTest.writable? CACHEDIR or FileTest.writable? fn
+	File.open(fn, "w", 0600) { |f|
+		cache = {
+				:version => 1,
+				:timestamp => Time.now,
+				:data => data
+			}
+		f.puts cache.to_yaml
+	}
+end
+def get_sensor_data
+	data = fetch_cache
+	return data if data
+
+	data = []
+	names = {}
+
+	rdout, wrout = IO.pipe
+	rderr, wrerr = IO.pipe
+
+	pid = fork
+	unless pid
+		# child
+		rdout.close
+		rderr.close
+		STDOUT.reopen wrout
+		STDERR.reopen wrerr
+		exec(IPMITOOL, '-I', 'open', 'sensor')
+		bail_out("fell through exec(). WTF.")
+	end
+	wrout.close
+	wrerr.close
+
+
+	out = []
+	err = []
+	tout = Thread.new { out = rdout.readlines }
+	terr = Thread.new { err = rderr.readlines }
+	tout.join
+	terr.join
+	Process.wait pid
+
+	bail_out("ipmitool printed stuff on stdout: "+err.join('')) if (err.length > 0)
+
+	out.each do |line|
+		line.strip!
+		# cpu1.vtt-s3      | 1.200      | Volts      | ok    | na        | 1.080     | na        | na        | 1.320     | na        
+		# CPU0 IERR        | 0x0        | discrete   | 0x0100| na        | na        | na        | na        | na        | na
+		items = line.split(/\s*\|\s*/)
+		unless items.size == 10
+			bail_out "Got weird number of fields in ipmitool output.  Expected 10 but got #{items.size} for line '#{line}'."
+		end
+		(name, value, unit, status, lower_non_recov, lower_crit, lower_non_crit, upper_non_crit, upper_crit, upper_non_recov) = items
+		nname = normalize_sensor name;
+		if names.has_key?(nname)
+			#bail_out "Sensor name #{name} (normalized to #{nname}) appears more than once in ipmitool output."
+			next
+		end
+		names[nname] = 1
+		data << {
+			:name => name,
+			:value => value,
+			:unit => unit,
+			:status => status,
+			:lower_non_recov => lower_non_recov,
+			:lower_crit => lower_crit,
+			:lower_non_crit => lower_non_crit,
+			:upper_non_crit => upper_non_crit,
+			:upper_crit => upper_crit,
+			:upper_non_recov => upper_non_recov,
+			:line => line
+		}
+	end
+
+	write_cache data
+	data
+end
+
+def autoconf
+	if get_sensor_data.length > 0
+		puts "yes"
+	else
+		puts "no (no ipmitool output)"
+	end
+end
+def suggest
+	#puts get_sensor_data.collect{ |i| normalize_unit(i[:unit]) }.uniq.sort.delete_if{ |i| i == "discrete" }
+	VALID_UNITS.each do |u|
+		puts "u_#{u}"
+	end
+end
+
+def query_unit
+	match = /_u_(.*?)$/.match($0)
+	unless match
+		bail_out "Could not figure out which unit you want based on executeable name."
+	end
+	match[1]
+end
+
+def config
+	u = query_unit
+	case u
+		when "volts"
+			puts "graph_title IPMI Sensors: Voltages"
+			puts "graph_args --base 1000"
+			puts "graph_vlabel Volts";
+			puts "graph_category sensors"
+			puts "graph_info This graph shows the voltages as reported by IPMI"
+			get_sensor_data.each do |d|
+				next unless normalize_unit(d[:unit]) == u
+				n = normalize_sensor(d[:name])
+				puts "#{n}.label #{d[:name]}"
+				warn = normalize_thresholds(d[:lower_non_crit], d[:upper_non_crit])
+				puts "#{n}.warning #{warn}"
+				crit = normalize_thresholds(d[:lower_crit], d[:upper_crit])
+				puts "#{n}.critical #{crit}"
+			end
+		when "degrees_c"
+			puts "graph_title IPMI Sensors: Temperature"
+			puts "graph_args --base 1000 -l 0"
+			puts "graph_vlabel Degrees C";
+			puts "graph_category sensors"
+			puts "graph_info This graph shows the temperatures as reported by IPMI.  Note that for the Dell PowerEdge servers, the CPU temperature reported is always a negative value and represents a delta below the onset of thermal control circuit (TCC) activation.  The TCC prevents damage to the CPU when the temperature gets too high.  As the temperature approaches TCC activation, the value approaches zero degrees Celsius."
+			get_sensor_data.each do |d|
+				next unless normalize_unit(d[:unit]) == u
+				n = normalize_sensor(d[:name])
+				puts "#{n}.label #{d[:name]}"
+				warn = normalize_thresholds(d[:lower_non_crit], d[:upper_non_crit])
+				puts "#{n}.warning #{warn}"
+				crit = normalize_thresholds(d[:lower_crit], d[:upper_crit])
+				puts "#{n}.critical #{crit}"
+			end
+		when "rpm"
+			puts "graph_title IPMI Sensors: RPMs"
+			puts "graph_args --base 1000 -l 0"
+			puts "graph_vlabel RPM";
+			puts "graph_category sensors"
+			puts "graph_info This graph shows the RPMs as reported by IPMI"
+			get_sensor_data.each do |d|
+				next unless normalize_unit(d[:unit]) == u
+				n = normalize_sensor(d[:name])
+				puts "#{n}.label #{d[:name]}"
+				# no warning, only critical
+				crit = normalize_thresholds(d[:lower_crit], d[:upper_crit])
+				puts "#{n}.critical #{crit}"
+			end
+		when "amps"
+			puts "graph_title IPMI Sensors: Amperes"
+			puts "graph_args --base 1000"
+			puts "graph_vlabel Amperes";
+			puts "graph_category sensors"
+			puts "graph_info This graph shows the amperes as reported by IPMI"
+			get_sensor_data.each do |d|
+				next unless normalize_unit(d[:unit]) == u
+				n = normalize_sensor(d[:name])
+				puts "#{n}.label #{d[:name]}"
+			end
+		when "watts"
+			puts "graph_title IPMI Sensors: Watts"
+			puts "graph_args --base 1000"
+			puts "graph_vlabel Watts";
+			puts "graph_category sensors"
+			puts "graph_info This graph shows the watts as reported by IPMI"
+			get_sensor_data.each do |d|
+				next unless normalize_unit(d[:unit]) == u
+				n = normalize_sensor(d[:name])
+				puts "#{n}.label #{d[:name]}"
+			end
+		else
+			bail_out "Do not know how to handle unit '#{u}'"
+	end
+end
+
+
+def report
+	u = query_unit
+	get_sensor_data.each do |d|
+		next unless normalize_unit(d[:unit]) == u
+		n = normalize_sensor(d[:name])
+		puts "#{n}.value #{d[:value]}"
+	end
+end
+
+
+case ARGV[0]
+	when "autoconf"
+		autoconf
+	when "suggest"
+		suggest
+	when "config"
+		config
+	else
+		report
+end

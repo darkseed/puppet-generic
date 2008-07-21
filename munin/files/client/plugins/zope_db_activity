@@ -1,0 +1,38 @@
+#!/usr/bin/python
+
+from sys import argv
+import httplib, re
+
+url = "/db_activity"
+
+matches = re.search('_([0-9]+)$', argv[0])
+if matches and len(matches.groups()) > 0:
+	port = matches.groups()[0]
+else:
+	port = 8080
+
+connection = httplib.HTTPConnection("localhost", port)
+
+if len(argv) > 1 and argv[1] == 'config':
+	print """\
+graph_title Zope database activity
+graph_vlabel activity / 5 minutes
+graph_category Zope
+graph_info The number of reads, stores, and connections in the ZODB backend."""
+
+        print """\
+load_count.label loads
+store_count.label stores
+connections.label connections"""
+
+else:
+	connection.request("GET", url)
+	result = connection.getresponse()
+	data = result.read().strip()
+	connection.close()
+
+	(total_load_count, total_store_count, total_connections) = data.split()
+
+	print 'load_count.value', total_load_count
+	print 'store_count.value', total_store_count
+	print 'connections.value', total_connections

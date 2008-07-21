@@ -1,0 +1,12 @@
+# Get the zope2.9 package from testing. Zope 2.9.6, which is currently in
+# stable, contains a backwards incompatible timezone fix for
+# http://www.zope.org/Collectors/Zope/2191. Zope 2.9.7 reverts this fix.
+Package: zope2.9
+Pin: release a=testing
+Pin-Priority: 1001
+
+# Get drupal5 from testing and pin it at this release arch so we don't
+# accidentaly upgrade the package to unstable.
+Package: drupal5
+Pin: release a=testing
+Pin-Priority: 1001

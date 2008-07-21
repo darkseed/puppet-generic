@@ -1,0 +1,40 @@
+#!/bin/sh
+#
+# Script to monitor free physical extents for LVM.
+#
+# Parameters understood:
+#
+# 	config   (required)
+# 	autoconf (optional - used by munin-config)
+#
+# Magic markers (optional - used by munin-config and installation
+# scripts):
+#
+#%# family=manual
+#%# capabilities=autoconf
+
+MAXLABEL=20
+MAXNAME=15
+
+if [ "$1" = "autoconf" ]; then
+	echo yes
+	exit 0
+fi
+
+if [ "$1" = "config" ]; then
+
+	echo 'graph_title Unallocated disk space (in bytes)'
+	echo 'graph_args --base 1024 --lower-limit 0'
+	echo 'graph_vlabel bytes'
+	echo 'graph_category disk'
+	echo 'graph_total Total'
+	vgdisplay -c | cut -d: -f1,13,16 --output-delimiter=" " | while read name pe_size pe_free; do
+		echo "$name.label $name"
+		echo "$name.cdef $name,1024,*,$pe_size,*"
+	done
+	exit 0
+fi
+
+vgdisplay -c | cut -d: -f1,13,16 --output-delimiter=" " | while read name pe_size pe_free; do
+	echo "$name.value $pe_free"
+done

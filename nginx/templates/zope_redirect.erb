@@ -1,0 +1,11 @@
+server {
+	listen		80;
+	server_name	<%= domain %> <%= serveralias.to_a.join(" ") if serveralias %>;
+	access_log	/var/log/nginx/<%= domain %>.access.log;
+	error_log	/var/log/nginx/<%= domain %>.error.log;
+
+	rewrite		^(/?)$  <%= root_redirect_url  %>$1 break;
+	rewrite		^/(.+)  <%= other_redirect_url %>$1 break;
+
+	include /etc/nginx/vhost-additions/<%= domain %>/*;
+}

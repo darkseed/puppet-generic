@@ -1,0 +1,33 @@
+<VirtualHost <%= address %>>
+  ServerAdmin	support@kumina.nl
+  ServerName	<%= domain %>
+<% if serveralias -%>
+  ServerAlias	<%= serveralias.to_a.join(" ") %>
+<% end -%>
+<% if scriptalias -%>
+  ScriptAlias   /cgi-bin <%= scriptalias %>
+  <Directory "<%= scriptalias %>">
+    AllowOverride None
+    Options ExecCGI
+    Order allow,deny
+    Allow from all
+  </Directory>
+<% end -%>
+
+  <Location />
+    SetHandler mod_python
+    PythonHandler django.core.handlers.modpython
+    PythonPath "[ '<%= djangoprojectpath.split("/")[0..-2].join("/") %>', '<%= djangoprojectpath %>' ] + sys.path"
+    SetEnv DJANGO_SETTINGS_MODULE <%= djangoproject %>.settings
+    SetEnv PYTHON_EGG_CACHE /var/cache/python-egg-cache
+  </Location>
+  <Location /media/>
+    SetHandler None
+  </Location>
+  Alias /media <%= djangoprojectpath %>/media
+
+  CustomLog	/var/log/apache2/<%= domain %>-access.log  combined
+  ErrorLog	/var/log/apache2/<%= domain %>-error.log
+  DocumentRoot	<%= documentroot %>
+  Include	/etc/apache2/vhost-additions/<%= domain %>/
+</VirtualHost>

@@ -1,0 +1,15 @@
+<VirtualHost <%= address %>>
+  ServerAdmin	support@kumina.nl
+  ServerName	<%= domain %>
+<% if serveralias -%>
+  ServerAlias	<%= serveralias.to_a.join(" ") -%>
+<% end %>
+  CustomLog	/var/log/apache2/<%= domain %>-access.log combined
+  ErrorLog	/var/log/apache2/<%= domain %>-error.log
+  <Location />
+    Allow from all
+    # Proxy to Tomcat
+    ProxyPass ajp://localhost:<%= projectid %>009/
+  </Location>
+  Include	/etc/apache2/vhost-additions/<%= domain %>/
+</VirtualHost>

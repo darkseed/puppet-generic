@@ -1,0 +1,6 @@
+<Directory /content/<%= tomcatinstance %>>
+        Allow from all
+        <Limit PUT POST DELETE PROPFIND PROPPATCH MKCOL COPY MOVE LOCK UNLOCK>
+                require group "<%= tomcatinstance %>"
+        </Limit>
+</Directory>

@@ -1,0 +1,14 @@
+<VirtualHost <%= address %>>
+	ServerAdmin webmaster@kumina.nl
+
+	PythonPath "sys.path+['/opt/webredirects', '/opt']"
+	PythonDebug Off
+	PythonAutoReload Off
+	PythonHeaderParserHandler apache_redirect
+	PythonTransHandler apache_translate
+
+	ErrorLog /var/log/apache2/error.log
+	CustomLog /var/log/apache2/access.log vhostcombined
+
+	Include /etc/apache2/vhost-additions/default/
+</VirtualHost>

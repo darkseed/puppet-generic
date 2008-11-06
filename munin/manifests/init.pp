@@ -61,4 +61,20 @@ class munin::server {
 		group => "munin",
 		require => Package["nsca"],
 	}
+
+        # Needed when munin-graph runs as a CGI script
+	package { "libdate-manip-perl":
+		ensure => installed,
+	}
+
+	file {
+		"/var/log/munin/munin-graph.log":
+			group => "www-data",
+			mode => 660;
+		"/etc/logrotate.d/munin":
+			owner => "root",
+			group => "root",
+			mode => 644,
+			source => "puppet://puppet/munin/server/logrotate.d/munin";
+	}
 }

@@ -1,0 +1,3 @@
+# The RRD files for Munin are stored on a memory backed filesystem, so sync
+# to disk every 30 minutes.
+19,49 * * * *   munin [ -d /dev/shm/munin ] && rsync -a /dev/shm/munin /var/lib

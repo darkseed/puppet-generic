@@ -1,0 +1,23 @@
+*** Targets ***
+
+probe = FPing
+
+## You have to edit and uncomment all what you want below this.
+# Please, refer to smokeping_config man page for more info
+# The given adresses aren't real to avoid DoS.
+
+menu = Top
+title = Network Latency Grapher
+remark = Welcome to the SmokePing website of 'A poorly \
+	mantained site running Debian.'
+
++ Local
+
+menu = Local
+title = Local Network
+
+++ LocalMachine
+
+menu = Local Machine
+title = This host
+host = localhost

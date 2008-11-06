@@ -1,0 +1,19 @@
+*** Probes ***
+
++ FPing
+binary = /usr/bin/fping
+
++ Curl
+binary = /usr/bin/curl
+step = 300
+pings = 5
+
++DNS
+binary = /usr/bin/dig
+step = 300
+timeout = 15
+
++EchoPingSmtp
+binary = /usr/bin/echoping
+step = 300
+

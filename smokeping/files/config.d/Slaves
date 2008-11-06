@@ -1,0 +1,9 @@
+# *** Slaves ***
+# 
+## make sure this is not world-readable!
+## secrets=/etc/smokeping/slave-secrets
+#
+# +slave1
+# display_name=slave_name
+# color=0000ff
+

@@ -1,0 +1,15 @@
+*** General ***
+
+@include /etc/smokeping/config.d/pathnames
+
+# Please edit this to suit your installation
+owner    = Joe Random
+contact  = joe@some.place.xyz
+cgiurl   = http://put_here_your_domain/cgi-bin/smokeping.cgi
+mailhost = smtp.mailhost.abc
+# specify this to get syslog logging
+syslogfacility = local0
+# each probe is now run in its own process
+# disable this to revert to the old behaviour
+# concurrentprobes = no
+

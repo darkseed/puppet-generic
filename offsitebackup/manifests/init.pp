@@ -84,13 +84,13 @@ class offsitebackup::client {
 
 	file { "/etc/backup/prepare.d/dpkg-list":
 		ensure => symlink,
-		target => "/usr/share/offsite-backup/dpkg-list",
+		target => "/usr/share/offsite-backup/prepare/dpkg-list",
 		require => Package["offsite-backup"];
 	}
 
 	file { "/etc/backup/prepare.d/filesystems":
 		ensure => symlink,
-		target => "/usr/share/offsite-backup/filesystems",
+		target => "/usr/share/offsite-backup/prepare/filesystems",
 		require => Package["offsite-backup"];
 	}
 }

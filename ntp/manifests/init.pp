@@ -29,10 +29,10 @@ class ntp::server {
 			group => "root",
 			source => "puppet://puppet/ntp/server/openntpd/ntpd.conf",
 			require => Package["openntpd"];
-		"/etc/sysctl.conf":
-			owner => "root",
-			group => "root",
-			source => "puppet://puppet/ntp/server/sysctl.conf";
+#		"/etc/sysctl.conf":
+#			owner => "root",
+#			group => "root",
+#			source => "puppet://puppet/ntp/server/sysctl.conf";
 	}
 
 	service { "openntpd":

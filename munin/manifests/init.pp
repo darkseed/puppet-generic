@@ -34,6 +34,7 @@ class munin::client {
 		source => "puppet://puppet/munin/client/plugins",
 		owner => "root",
 		group => "staff",
+		mode => 755,
 	}
 }
 

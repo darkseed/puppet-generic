@@ -3,7 +3,7 @@ class munin::client {
 		ensure => installed,
 	}
 
-	if (($lsbdistid == "Debian") and ($lsbdistcodename == "lenny")) {
+	if (($operatingsystem == "Debian") and ($operatingsystemrelease == "5.0")) {
 		package { "munin-plugins-extra":
 			ensure => installed,
 		}

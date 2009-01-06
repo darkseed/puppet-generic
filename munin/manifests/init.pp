@@ -69,6 +69,10 @@ class munin::server {
 	}
 
 	file {
+		"/var/log/munin":
+			owner => "munin",
+			group => "admin",
+			mode => 751;
 		"/var/log/munin/munin-graph.log":
 			group => "www-data",
 			mode => 660;

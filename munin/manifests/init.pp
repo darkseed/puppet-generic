@@ -1,6 +1,12 @@
 class munin::client {
-	package { ["munin-node"]:
+	package { "munin-node":
 		ensure => installed,
+	}
+
+	if (($lsbdistid == "Debian") and ($lsbdistcodename == "lenny")) {
+		package { "munin-plugins-extra":
+			ensure => installed,
+		}
 	}
 
 	# Munin node configuration

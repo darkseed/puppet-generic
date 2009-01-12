@@ -3,6 +3,10 @@ class spamassassin {
 		ensure => installed,
 	}
 
+	package { ["libmail-spf-perl", "libmail-dkim-perl"]:
+		ensure => installed,
+	}
+
 	file { "/etc/default/spamassassin":
 		owner => "root",
 		group => "root",

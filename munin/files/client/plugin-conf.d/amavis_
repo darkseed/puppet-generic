@@ -1,0 +1,3 @@
+[amavis_*]
+env.amavis_db_home /var/lib/amavis/db
+user amavis

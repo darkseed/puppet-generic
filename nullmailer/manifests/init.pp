@@ -4,7 +4,7 @@ class nullmailer {
 	}
 
 	package { ["postfix", "exim4", "exim4-daemon-light", "exim4-base", "exim4-config"]:
-		ensure => purged,
+		ensure => absent,
 	}
 
 	file {

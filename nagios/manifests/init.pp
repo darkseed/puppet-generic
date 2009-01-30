@@ -55,8 +55,7 @@ class nagios::nrpe {
         }
 
         exec { "update-inetd-add-nrpe":
-                command => "/usr/sbin/update-inetd --add '$ipaddress:nrpe stream tcp nowait nagios /usr/sbin/tcpd /usr/sbin/nrpe -c /etc/nagios/nrpe.cfg --in
-etd'",
+                command => "/usr/sbin/update-inetd --add '$ipaddress:nrpe stream tcp nowait nagios /usr/sbin/tcpd /usr/sbin/nrpe -c /etc/nagios/nrpe.cfg --inetd'",
                 unless => "/bin/grep -q $ipaddress:nrpe /etc/inetd.conf",
                 require => [Service["nagios-nrpe-server"], Exec["update-services-add-nrpe"]],
                 notify => Service["openbsd-inetd"],

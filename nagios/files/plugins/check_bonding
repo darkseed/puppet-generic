@@ -1,0 +1,186 @@
+#!/usr/bin/perl -w
+#
+# Nagios check for bonding.  Bart Cortooms <bart@kumina.nl>, Kumina, 2008.
+
+use strict;
+use Getopt::Long;
+use File::Basename;
+
+my $bonding_proc = '/proc/net/bonding';
+my $prog_name = basename($0);
+my $bond_devices = "all";
+my (%ok, %unknown, %warning, %critical);
+my %state;
+
+my %errorcodes = (
+	'OK' => { 'retvalue' => 0 },
+	'WARNING' => { 'retvalue' => 1 },
+	'CRITICAL' => { 'retvalue' => 2 },
+	'UNKNOWN' => { 'retvalue' => 3 }
+);
+
+&parse_options;
+my @devices = &find_bond_devices($bond_devices);
+&parse_bond_devices_state(@devices);
+&report_status;
+
+sub print_usage {
+	print <<EOF
+Usage: $prog_name [-d <all|bond0|bond1}...>]
+	Options:
+	-d STRING [default: all.  Example: bond0,bond1 ]
+EOF
+}
+
+# Get command line options
+sub parse_options {
+	my ($help, $version, $debug, $ok_string, $warning_string, 
+	    $critical_string); 
+	GetOptions("d|device|devices=s" => \$bond_devices);
+}
+
+# Find and check for existing bond devices
+sub find_bond_devices {
+	my ($devices) = (@_);
+	my @result;
+
+	if ($devices =~ /^all$/i) {
+		opendir(DIR, $bonding_proc) || &myexit('UNKNOWN', "Could find $bonding_proc. Module not loaded?");
+		while (my $device = readdir(DIR)) {
+			unless ($device eq "." or $device eq "..") {
+				push(@result, $device);
+			}
+		}
+		closedir(DIR);
+	} else {
+		@result = split(/,/, $devices);
+	}
+
+	foreach my $device (@result) {
+		unless (-r "$bonding_proc/$device") {
+			&myexit('UNKNOWN', "Could not find bond device $bonding_proc/$device");
+		}
+	}
+
+	return @result;
+}
+
+# Parse the state of the bond devices
+sub parse_bond_devices_state {
+	my @devices = @_;
+	my $message = "";
+
+	foreach my $device (@devices) {
+		my $slave = undef;
+		$state{$device} = {
+			'health' => 'UNKNOWN',
+			'primary_slave' => 'uknown',
+			'active_slave' => 'unknown',
+			'active_slave_status' => 'unknown',
+			'slaves' => {},
+		};
+
+		open(BOND_PROC_FILE, "$bonding_proc/$device");
+		while (<BOND_PROC_FILE>) {
+			if (/^Primary Slave: (.*)/i) {
+				$state{$device}{'primary_slave'} = $1;
+			} elsif (/^Currently Active Slave: (.*)/i) {
+				$state{$device}{'active_slave'} = $1;
+			} elsif (/^Slave Interface: (.*)/i) {
+				$slave = $1;
+				$state{$device}{'slaves'}{$slave} = 'unknown';
+			} elsif ((/^MII Status: (.*)/i) and not defined($slave)) {
+				$state{$device}{'active_slave_status'} = $1;
+			} elsif ((/^MII Status: (.*)/i) and defined($slave)) {
+				$state{$device}{'slaves'}{$slave} = $1;
+				$slave = undef;
+			}
+		}
+
+		# If the active slave is down, all bets are off.
+		if ($state{$device}{'active_slave_status'} eq 'down') {
+			$state{$device}{'health'} = 'CRITICAL';
+			$state{$device}{'health_message'} = " The active slave $state{$device}{active_slave} is down.";
+			$critical{$device} = 1;
+			next;
+		}
+
+		# If a primary slave has been selected, make sure the current
+		# active slave is the primary slave.
+		if (($state{$device}{'primary_slave'} ne 'None') and
+		    ($state{$device}{'active_slave'} ne $state{$device}{'primary_slave'})) {
+			$state{$device}{'health'} = 'WARN';
+			$state{$device}{'health_message'} = " Primary slave $state{$device}{primary_slave} is not the active slave.";
+			$warning{$device} = 1;
+		}
+
+		# If one of the slaves is not up, but the active slave is not
+		# down, change health to 'WARN'.
+		foreach my $slave (keys %{$state{$device}{'slaves'}}) {
+			if ($state{$device}{'slaves'}{$slave} ne 'up') {
+				$state{$device}{'health'} = 'WARN';
+				$state{$device}{'health_message'} .= " Slave $slave is $state{$device}{'slaves'}{$slave}.";
+				$warning{$device} = 1;
+			}
+		}
+
+		if (($state{$device}{'health'} ne 'WARN') and
+		    ($state{$device}{'active_slave_status'} eq 'up')) {
+			# Whew, we're ok
+			$state{$device}{'health'} = 'OK';
+			$state{$device}{'health_message'} = " ok.";
+			$ok{$device} = 1;
+		}
+
+		if ($state{$device}{'health'} eq 'UNKNOWN') {
+			# How did we end up here?
+			$state{$device}{'health_message'} = " State unknown.";
+			$unknown{$device} = 1;
+		}
+	} continue {
+		close(BOND_PROC_FILE);
+	}
+}
+
+sub report_status {
+	my @messages;
+	my $device;
+
+	if (int(keys %critical) > 0)  {
+		# We found at least 1 device with health 'CRITICAL'
+		foreach $device (sort keys %critical) {
+			push(@messages, $device . $state{$device}{'health_message'});
+		}
+		&myexit('CRITICAL', join(", ", @messages));
+	} elsif (int(keys %warning) > 0)  {
+		# We found at least 1 device with health 'WARN'
+		foreach $device (sort keys %warning) {
+			push(@messages, $device . $state{$device}{'health_message'});
+		}
+		&myexit('WARNING', join(", ", @messages));
+	} elsif (int(keys %unknown) > 0)  {
+		# We found at least 1 device with health 'UNKNOWN'
+		foreach $device (sort keys %unknown) {
+			push(@messages, $device . $state{$device}{'health_message'});
+		}
+		&myexit('UNKNOWN', join(", ", @messages));
+	} else {
+		# Everything looks ok
+		foreach $device (sort keys %ok) {
+			push(@messages, $device . $state{$device}{'health_message'});
+		}
+		&myexit('OK', join(", ", @messages));
+	}
+}
+
+# Print error message and exit
+sub myexit {
+	my ($error, $message) = @_;
+	if (!(defined($errorcodes{$error}))) {
+		printf STDERR "Error code $error not known\n";
+		print "UNKNOWN: $message\n";
+		exit $errorcodes{'UNKNOWN'}->{'retvalue'};
+	}
+	print "$error: $message\n";
+	exit $errorcodes{$error}->{'retvalue'};
+}

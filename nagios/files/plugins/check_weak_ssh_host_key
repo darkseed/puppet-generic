@@ -1,0 +1,21 @@
+#!/bin/sh
+#
+# Checks if the SSH host key for a given host is weak. See
+# http://lists.debian.org/debian-security-announce/2008/msg00152.html
+
+if [ $# -ne 1 ]; then
+	echo "Usage: $0 <host>"
+	exit 1
+fi
+
+test -x /usr/local/bin/dowkd.pl || exit 3
+
+/usr/local/bin/dowkd.pl -c /var/cache/dowkd/dowkd.db host "$1" 2>/dev/null | grep -q "^$1$"
+
+if [ $? -eq 0 ]; then
+	echo "CRITICAL - SSH host key for $1 is weak"
+	exit 2
+else
+	echo "OK - SSH host key for $1 is not weak"
+	exit 0
+fi

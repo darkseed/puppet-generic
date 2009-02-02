@@ -1,0 +1,17 @@
+# /etc/default/nagios3
+
+# location of the nagios configuration file
+NAGIOSCFG="/etc/nagios3/nagios.cfg"
+
+# location of the CGI configuration file
+CGICFG="/etc/nagios3/cgi.cfg"
+
+# nicelevel to run nagios daemon with
+NICENESS=5
+
+# if you use pam_tmpdir, you need to explicitly set TMPDIR:
+#TMPDIR=/tmp
+
+# Nagios homedir. Defaults to /. The homedir contains .my.cnf which Nagios uses
+# for the MySQL checks, and I don't want to put that file in /.
+HOME=$(getent passwd nagios | cut -d: -f6)

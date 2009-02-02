@@ -1,0 +1,19 @@
+#!/bin/sh
+#
+# Check if a file exists
+
+if [ $# -ne 1 ]; then
+	echo "Usage: $0 <file>"
+	exit 3
+fi
+
+file="$1"
+
+test -f "$file"
+
+if [ $? -eq 0 ]; then
+	echo "OK: $file exists"
+	exit 0
+else
+	echo "CRITICAL: $file does not exist"
+fi

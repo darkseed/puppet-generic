@@ -1,0 +1,100 @@
+#!/bin/sh
+# 
+# Script to send an SMS email notifcation to Mollie's HTTP gateways
+# Based on the SMS2Email script which can also be found on nagiosexchange.org
+# Reworked by Dennis Storm - Brainstorm ICT
+# Rereworked by Bart Cortooms - Kumina
+# 
+#################################################################################
+#
+# Username and password associated with Mollie account (<http://www.mollie.nl>)
+# Modify these values to match your account credentials if you don't want to
+# specify them as command line arguments.
+
+source /etc/nagios3/send_sms.cfg
+
+# Show usage if necessary
+if [ $# -eq 0 ]; then
+    echo "Usage: $0 -n [number] -m [message] -s [sender] -u [username] -p [password]";
+    echo "";
+    echo "[number]   = SMS number to send message to";
+    echo "[message]  = Text of message you want to send";
+    echo "[username] = Username assocated with Mollie  account";
+    echo "[sender]   = Sender"
+    echo "[password] = Password assocated with Mollie account";
+    echo "               Both the username and password options are optional and";
+    echo "               override the account credentials defined in this script.";
+    echo "";
+    exit 1;
+fi
+
+
+# Get command line arguments
+while [ "$1" != "" ] ; do
+    case $1 in
+        -n)
+            # Get the SMS number that we should send message to
+            number=$2;
+            shift 2;
+            ;;
+        -m)
+            # Get the message we should send
+            message=`echo "$2" | cut -b -160`;
+            shift 2;
+            ;;
+        -s)
+            # Get the sender to show in the SMS
+            sender=$2;
+            shift 2;
+            ;;
+        -u)
+            # Get the username
+            username=$2;
+            shift 2;
+            ;;
+        -p)
+            # Get the password
+            password=$2;
+            shift 2;
+            ;;
+        *)
+            echo "Unknown option: $1"
+            exit 1;
+            ;;
+    esac
+done
+
+# We haven't sent the message yet
+message_sent_ok=0;
+
+# Try to send an HTTP POST message (try all servers until successful)
+for server in $servers; do
+    response=$(curl -s \
+                    -d gebruikersnaam="$username" \
+                    -d md5_wachtwoord="$md5_password" \
+                    -d afzender="$sender" \
+                    -d ontvangers="$number" \
+                    -d bericht="$message" \
+                    -d gateway=1 http://$server/partners/api/sms/)
+
+    # Curl was able to post okay...
+    if [ "$?" -eq "0" ]; then
+        # Test the response from the Mollie server
+        case $response in
+            AQSMS-OK)
+                # Message was queued ok
+                mesage_sent_ok=1;
+                echo "Message posted OK to HTTP gateway $server"
+                exit 0;
+                ;;
+            10*)
+                # Some kind of fatal error occurred
+                echo "Fatal error received from HTTP gateway $server: $RESPONSE"
+                exit 1;
+                ;;
+            *)
+                # No response or invalid response
+                ;;
+        esac
+    fi
+done

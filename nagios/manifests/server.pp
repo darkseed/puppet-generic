@@ -1,15 +1,4 @@
-class nagios::server {
-	include nagios::plugins
-
-	define check($command) {
-		nagios_command { "check_$name":
-			command_line => $command,
-			target => "/etc/nagios-plugins/config/$name.cfg",
-			notify => Service["nagios3"],
-			require => Package["nagios-plugins-basic"],
-		}
-	}
-
+class nagios::nsca {
 	package { "nsca":
 		ensure => installed,
 	}
@@ -27,6 +16,20 @@ class nagios::server {
 		owner => "root",
 		group => "nagios",
 	}
+}
+
+class nagios::server {
+	include nagios::plugins
+	include nagios::nsca
+
+	define check($command) {
+		nagios_command { "check_$name":
+			command_line => $command,
+			target => "/etc/nagios-plugins/config/$name.cfg",
+			notify => Service["nagios3"],
+			require => Package["nagios-plugins-basic"],
+		}
+	}
 
 	package { ["nagios3", "nagios-plugins", "curl", "nagios-nrpe-plugin"]:
 		ensure => installed,
@@ -42,7 +45,6 @@ class nagios::server {
 		command     => "/etc/init.d/nagios3 reload",
 		refreshonly => true,
 	}
-
 
 	# Change the homedir for Nagios to /var/lib/nagios3 so we can put e.g.
 	# a .mycnf with MySQL login details in there.

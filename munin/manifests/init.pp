@@ -45,14 +45,8 @@ class munin::client {
 }
 
 class munin::server {
-	package { ["munin", "nsca"]:
+	package { ["munin"]:
 		ensure => installed,
-	}
-
-	service { "nsca":
-		enable => false,
-		ensure => running,
-		require => Package["nsca"],
 	}
 
 	file { "/etc/munin/munin.conf":

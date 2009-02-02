@@ -1,5 +1,5 @@
 class nagios {
-	package { ["nagios2", "nagios-plugins", "nsca"]:
+	package { ["nagios2", "nagios-plugins"]:
 		ensure => installed,
 	}
 
@@ -7,9 +7,6 @@ class nagios {
 		"nagios2":
 			ensure => running,
 			require => Package["nagios2"];
-		"nsca":
-			ensure => running,
-			require => Package["nsca"];
 	}
 
 	# Allow external commands to be submitted through the web interface

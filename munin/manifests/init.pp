@@ -56,14 +56,6 @@ class munin::server {
 		require => Package["munin"],
 	}
 
-	file { "/etc/send_nsca.cfg":
-		source => "puppet://puppet/munin/server/send_nsca.cfg",
-		mode => 640,
-		owner => "root",
-		group => "munin",
-		require => Package["nsca"],
-	}
-
         # Needed when munin-graph runs as a CGI script
 	package { "libdate-manip-perl":
 		ensure => installed,

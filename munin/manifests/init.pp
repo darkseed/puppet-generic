@@ -59,7 +59,7 @@ class munin::server {
 	file { "/etc/send_nsca.cfg":
 		source => "puppet://puppet/munin/server/send_nsca.cfg",
 		mode => 640,
-		owner = > "root",
+		owner => "root",
 		group => "munin",
 		require => Package["nsca"],
 	}

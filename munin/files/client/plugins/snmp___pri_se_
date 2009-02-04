@@ -2,7 +2,7 @@
 #
 # Munin plugin snmp__bri_se_
 #
-# Version: 0.3, released on 30/02/2009, tested on Debian GNU/Linux 4.0 (etch)
+# Version: 0.4, released on 04/02/2009, tested on Debian GNU/Linux 4.0 (etch)
 # using Cisco 5350 gateways.
 #
 # This plugin reports the number of PRI channels currently in use on SE/foo
@@ -45,6 +45,7 @@ case "$1" in
 		echo "host_name $HOSTNAME"
 		echo "graph_title PRI usage on SE-$SE"
 		echo "graph_vlabel Number of used channels"
+		echo "graph_args --lower-limit 0 --upper-limit 32
 		echo "graph_scale no"
 		echo "graph_category network"
 		for CHANNEL in $(seq 0 7); do

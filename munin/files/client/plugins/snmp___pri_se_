@@ -45,7 +45,7 @@ case "$1" in
 		echo "host_name $HOSTNAME"
 		echo "graph_title PRI usage on SE-$SE"
 		echo "graph_vlabel Number of used channels"
-		echo "graph_args --lower-limit 0 --upper-limit 32
+		echo "graph_args --lower-limit 0 --upper-limit 32"
 		echo "graph_scale no"
 		echo "graph_category network"
 		for CHANNEL in $(seq 0 7); do

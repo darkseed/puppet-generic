@@ -49,7 +49,7 @@ case "$1" in
 		echo "graph_scale no"
 		echo "graph_category network"
 		for CHANNEL in $(seq 0 7); do
-			echo "chan_$CHANNEL.label Channel $CHANNEL"
+			echo "chan_$CHANNEL.label Port $CHANNEL"
 		done
 		exit 0;;
 esac

@@ -24,7 +24,7 @@ class powerdns::common {
 			require => Package["pdns-server"];
 		"/etc/powerdns/pdns.d":
 			ensure => directory,
-			owner => "pdns",
+			owner => "root",
 			group => "root",
 			mode => "750",
 			require => Package["pdns-server"];
@@ -34,14 +34,14 @@ class powerdns::common {
 	file {
 		"/etc/powerdns/pdns.conf":
 			source => "puppet://puppet/powerdns/powerdns/pdns.conf",
-			owner => "pdns",
+			owner => "root",
 			group => "root",
 			mode => 640,
 			notify => Service["pdns"],
 			require => Package["pdns-server"];
 		"/etc/powerdns/pdns.d/pdns.local":
 			source => "puppet://puppet/powerdns/powerdns/pdns.d/pdns.local",
-			owner => "pdns",
+			owner => "root",
 			group => "root",
 			mode => 640,
 			notify => Service["pdns"],
@@ -52,6 +52,7 @@ class powerdns::common {
 	service {
 		"pdns":
 			ensure => running,
+			hasrestart => true,
 			require => File["/etc/powerdns/pdns.conf"];
 	}
 }
@@ -87,6 +88,8 @@ class powerdns::recursor {
 	service {
 		"pdns-recursor":
 			ensure => running,
+			hasrestart => true,
+			pattern => "pdns_recursor",
 			require => File["/etc/powerdns/recursor.conf"];
 	}
 
@@ -94,7 +97,7 @@ class powerdns::recursor {
 	file {
 		"/etc/powerdns/recursor.conf":
 			source => "puppet://puppet/powerdns/powerdns/recursor.conf",
-			owner => "pdns",
+			owner => "root",
 			group => "root",
 			mode => 640,
 			notify => Service["pdns-recursor"],

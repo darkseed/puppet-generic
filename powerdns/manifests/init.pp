@@ -35,7 +35,7 @@ class powerdns::common {
 		"pdns":
 			ensure => running,
 			hasrestart => true,
-			require => File["/var/lib/powerdns"];
+			require => Package["pdns-server"];
 	}
 }
 

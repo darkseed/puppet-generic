@@ -53,6 +53,7 @@ class powerdns::common {
 		"pdns":
 			ensure => running,
 			hasrestart => true,
+			pattern => "pdns_server",
 			require => File["/etc/powerdns/pdns.conf"];
 	}
 }

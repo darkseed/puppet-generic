@@ -1,4 +1,6 @@
-# Puppet manifest for PowerDNS, tested on Debian GNU/Linux 4.0 (etch).
+# Puppet manifest for PowerDNS
+#
+# Tested on Debian GNU/Linux 4.0 (etch).
 #
 # Copyright (c) 2009 by Kees Meijs <kees@kumina.nl> for Kumina bv.
 #
@@ -8,15 +10,23 @@
 # you only distribute it under the same, similar or a compatible license. Any
 # of the above conditions can be waived if you get permission from the copyright
 # holder.
+#
+# For information about configuration, please refer to files/README.
 
 class powerdns::common {
-	# Make sure /var/lib/powerdns has correct permissions.
+	# Make sure directories have correct permissions.
 	file {
 		"/var/lib/powerdns":
 			ensure => directory,
 			owner => "root",
 			group => "pdns",
 			mode => 775,
+			require => Package["pdns-server"];
+		"/etc/powerdns/pdns.d":
+			ensure => directory,
+			owner => "root",
+			group => "pdns",
+			mode => "750",
 			require => Package["pdns-server"];
 	}
 
@@ -29,9 +39,7 @@ class powerdns::common {
 	}
 }
 
-class powerdns::master {
-	include powerdns::common
-
+class powerdns::master inherits powerdns::common {
 	# Install needed packages.
         package {
 		"pdns-server":
@@ -42,13 +50,9 @@ class powerdns::master {
 
 	# TODO
 	# /etc/powerdns/pdns.conf
-	# /etc/powerdns/pdns.d/(pdns.local)
-
 }
 
-class powerdns::slave {
-	include powerdns::common
-
+class powerdns::slave inherits powerdns::common {
 	# Install needed packages.
         package {
 		"pdns-server":
@@ -59,7 +63,6 @@ class powerdns::slave {
 
 	# TODO
 	# /etc/powerdns/pdns.conf
-	# /etc/powerdns/pdns.d/(pdns.local)
 }
 
 class powerdns::recursor {

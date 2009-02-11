@@ -1,7 +1,5 @@
 # Puppet manifest for PowerDNS
 #
-# Tested on Debian GNU/Linux 4.0 (etch).
-#
 # Copyright (c) 2009 by Kees Meijs <kees@kumina.nl> for Kumina bv.
 #
 # This work is licensed under the Creative Commons Attribution-Share Alike 3.0
@@ -12,21 +10,41 @@
 # holder.
 #
 # For information about configuration, please refer to files/README.
+#
+# This manifest was tested on Debian GNU/Linux 4.0 (etch).
 
 class powerdns::common {
 	# Make sure directories have correct permissions.
 	file {
 		"/var/lib/powerdns":
 			ensure => directory,
-			owner => "root",
-			group => "pdns",
-			mode => 775,
+			owner => "pdns",
+			group => "root",
+			mode => 750,
 			require => Package["pdns-server"];
 		"/etc/powerdns/pdns.d":
 			ensure => directory,
-			owner => "root",
-			group => "pdns",
+			owner => "pdns",
+			group => "root",
 			mode => "750",
+			require => Package["pdns-server"];
+		}
+	
+	# Default configuration file (you _want_ to override this! See README).
+	file {
+		"/etc/powerdns/pdns.conf":
+			source => "puppet://puppet/powerdns/powerdns/pdns.conf",
+			owner => "pdns",
+			group => "root",
+			mode => 640,
+			notify => Service["pdns"],
+			require => Package["pdns-server"];
+		"/etc/powerdns/pdns.d/pdns.local":
+			source => "puppet://puppet/powerdns/powerdns/pdns.d/pdns.local",
+			owner => "pdns",
+			group => "root",
+			mode => 640,
+			notify => Service["pdns"],
 			require => Package["pdns-server"];
 	}
 
@@ -34,8 +52,7 @@ class powerdns::common {
 	service {
 		"pdns":
 			ensure => running,
-			hasrestart => true,
-			require => Package["pdns-server"];
+			require => File["/etc/powerdns/pdns.conf"];
 	}
 }
 
@@ -47,9 +64,6 @@ class powerdns::master inherits powerdns::common {
 		"pdns-backend-mysql":
 			ensure => installed;
 	}
-
-	# TODO
-	# /etc/powerdns/pdns.conf
 }
 
 class powerdns::slave inherits powerdns::common {
@@ -60,9 +74,6 @@ class powerdns::slave inherits powerdns::common {
 		"pdns-backend-sqlite":
 			ensure => installed;
 	}
-
-	# TODO
-	# /etc/powerdns/pdns.conf
 }
 
 class powerdns::recursor {
@@ -76,10 +87,17 @@ class powerdns::recursor {
 	service {
 		"pdns-recursor":
 			ensure => running,
-			hasrestart => true,
-			require => Package["pdns-recursor"];
+			require => File["/etc/powerdns/recursor.conf"];
 	}
 
-	# TODO
-	# /etc/powerdns/recursor.conf
+	# Default configuration file (you _want_ to override this! See README).
+	file {
+		"/etc/powerdns/recursor.conf":
+			source => "puppet://puppet/powerdns/powerdns/recursor.conf",
+			owner => "pdns",
+			group => "root",
+			mode => 640,
+			notify => Service["pdns-recursor"],
+			require => Package["pdns-recursor"];
+	}
 }

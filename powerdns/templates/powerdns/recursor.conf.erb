@@ -67,7 +67,7 @@ delegation-only=com,net
 #################################
 # local-address	IP addresses to listen on, separated by spaces or commas
 #
-local-address=127.0.0.1
+local-address=<%= listenaddress %>
 
 #################################
 # local-port	port to listen on
@@ -107,7 +107,7 @@ local-port=53
 #################################
 # query-local-address	Source IP address for sending queries
 #
-# query-local-address=0.0.0.0
+query-local-address=<%= listenaddress %>
 
 #################################
 # query-local-address6	Source IPv6 address for sending queries

@@ -33,7 +33,7 @@ class powerdns::common {
 	# Default configuration file (you _want_ to override this! See README).
 	file {
 		"/etc/powerdns/pdns.conf":
-			source => "puppet://puppet/powerdns/powerdns/pdns.conf",
+			content => template("powerdns/powerdns/pdns.conf.erb"),
 			owner => "root",
 			group => "root",
 			mode => 640,

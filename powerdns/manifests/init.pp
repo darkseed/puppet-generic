@@ -78,7 +78,7 @@ class powerdns::slave inherits powerdns::common {
 	}
 
 	File["/etc/powerdns/pdns.d/pdns.local"] {
-		source => "puppet://puppet/powerdns/powerdns/pdns.d/pdns.local-slave"
+		source => "puppet://puppet/powerdns/powerdns/pdns.d/pdns.local-slave",
 	}
 }
 

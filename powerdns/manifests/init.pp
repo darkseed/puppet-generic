@@ -98,10 +98,9 @@ class powerdns::recursor {
 			require => File["/etc/powerdns/recursor.conf"];
 	}
 
-	# TODO: UPGRADE TO TEMPLATE!
 	file {
 		"/etc/powerdns/recursor.conf":
-			source => "puppet://puppet/powerdns/powerdns/recursor.conf",
+			content => template("powerdns/powerdns/recursor.conf.erb"),
 			owner => "root",
 			group => "root",
 			mode => 640,

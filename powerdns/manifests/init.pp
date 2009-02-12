@@ -9,8 +9,6 @@
 # of the above conditions can be waived if you get permission from the copyright
 # holder.
 #
-# For information about configuration, please refer to files/README.
-#
 # This manifest was tested on Debian GNU/Linux 4.0 (etch).
 
 class powerdns::common {
@@ -30,7 +28,6 @@ class powerdns::common {
 			require => Package["pdns-server"];
 		}
 	
-	# Default configuration file (you _want_ to override this! See README).
 	file {
 		"/etc/powerdns/pdns.conf":
 			content => template("powerdns/powerdns/pdns.conf.erb"),
@@ -40,7 +37,6 @@ class powerdns::common {
 			notify => Service["pdns"],
 			require => Package["pdns-server"];
 		"/etc/powerdns/pdns.d/pdns.local":
-			source => "puppet://puppet/powerdns/powerdns/pdns.d/pdns.local",
 			owner => "root",
 			group => "root",
 			mode => 640,
@@ -66,6 +62,10 @@ class powerdns::master inherits powerdns::common {
 		"pdns-backend-mysql":
 			ensure => installed;
 	}
+
+	File["/etc/powerdns/pdns.d/pdns.local"] {
+		content => template("powerdns/powerdns/pdns.d/pdns.local-erb"),
+	}
 }
 
 class powerdns::slave inherits powerdns::common {
@@ -75,6 +75,10 @@ class powerdns::slave inherits powerdns::common {
 			ensure => installed;
 		"pdns-backend-sqlite":
 			ensure => installed;
+	}
+
+	File["/etc/powerdns/pdns.d/pdns.local"] {
+		source => "puppet://puppet/powerdns/powerdns/pdns.d/pdns.local-slave"
 	}
 }
 
@@ -94,7 +98,7 @@ class powerdns::recursor {
 			require => File["/etc/powerdns/recursor.conf"];
 	}
 
-	# Default configuration file (you _want_ to override this! See README).
+	# TODO: UPGRADE TO TEMPLATE!
 	file {
 		"/etc/powerdns/recursor.conf":
 			source => "puppet://puppet/powerdns/powerdns/recursor.conf",

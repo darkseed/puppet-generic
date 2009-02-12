@@ -85,19 +85,6 @@ class nagios::nrpe::plugins {
 		"drbd_secondary":
 			command => '/usr/local/lib/nagios/plugins/check_drbd -d All -r Secondary',
 			require => File["/usr/local/lib/nagios/plugins/check_drbd"];
-		# Following 4 are added because dbm.itm is an asynchronous setup wrt drbd
-		"drbd_itm_dbm1_mysql":
-			command => '/usr/local/lib/nagios/plugins/check_drbd -d 0 -r Primary',
-			require => File["/usr/local/lib/nagios/plugins/check_drbd"];
-		"drbd_itm_dbm2_mysql":
-			command => '/usr/local/lib/nagios/plugins/check_drbd -d 0 -r Secondary',
-			require => File["/usr/local/lib/nagios/plugins/check_drbd"];
-		"drbd_itm_dbm1_postgresql":
-			command => '/usr/local/lib/nagios/plugins/check_drbd -d 1 -r Secondary',
-			require => File["/usr/local/lib/nagios/plugins/check_drbd"];
-		"drbd_itm_dbm2_postgresql":
-			command => '/usr/local/lib/nagios/plugins/check_drbd -d 1 -r Primary',
-			require => File["/usr/local/lib/nagios/plugins/check_drbd"];
 	}
 
 	file { "/usr/local/lib/nagios/plugins/check_drbd":

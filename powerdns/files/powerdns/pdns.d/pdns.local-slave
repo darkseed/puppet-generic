@@ -1,0 +1,5 @@
+# Here comes the local changes the user made, like configuration of 
+# the several backends that exists.
+
+launch=gsqlite
+gsqlite-database=/var/lib/powerdns/pdns.sqlite

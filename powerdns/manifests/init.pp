@@ -64,7 +64,7 @@ class powerdns::master inherits powerdns::common {
 	}
 
 	File["/etc/powerdns/pdns.d/pdns.local"] {
-		content => template("powerdns/powerdns/pdns.d/pdns.local-erb"),
+		content => template("powerdns/powerdns/pdns.d/pdns.local-master.erb"),
 	}
 }
 

@@ -3,7 +3,7 @@
 # allow-axfr-ips    If enabled, restrict zonetransfers to originate from these
 #                   IP addresses
 #
-# allow-axfr-ips=
+allow-axfr-ips=<%= axfraddresses %>
 
 #################################
 # allow-recursion	List of netmasks that are allowed to recurse
@@ -54,7 +54,7 @@ daemon=yes
 #################################
 # disable-axfr	Disable zonetransfers but do allow TCP queries
 #
-disable-axfr=yes
+disable-axfr=no
 
 #################################
 # disable-tcp	Do not listen to TCP queries
@@ -94,7 +94,7 @@ lazy-recursion=yes
 #################################
 # local-address	Local IP address to which we bind
 #
-local-address=0.0.0.0
+local-address=<%= listenaddress %>
 
 #################################
 # local-ipv6	Local IP address to which we bind
@@ -134,7 +134,7 @@ local-port=53
 #################################
 # master	Act as a master
 #
-# master=no
+master=yes
 
 #################################
 # max-queue-length	Maximum queuelength before considering situation lost
@@ -179,7 +179,7 @@ module-dir=/usr/lib/powerdns
 #################################
 # query-local-address   The IP address to use as a source address for sending
 #                       queries.
-# query-local-address=
+query-local-address=<%= listenaddress %>
 
 #################################
 # receiver-threads	Number of receiver threads to launch
@@ -214,7 +214,7 @@ setuid=pdns
 #################################
 # slave	Act as a slave
 #
-# slave=no
+slave=yes
 
 #################################
 # slave-cycle-interval	Reschedule failed SOA serial checks once every .. seconds

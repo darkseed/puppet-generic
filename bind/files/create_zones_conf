@@ -1,0 +1,14 @@
+#!/bin/sh
+
+dir=$1
+
+for zonefile in $dir/*; do
+	zone=$(basename $zonefile)
+	cat << EOF
+zone "$zone" {
+	type master;
+	file "/etc/bind/$zonefile";
+};
+
+EOF
+done

@@ -1,0 +1,16 @@
+# Logrotate configuration file fo Zope Debian package
+
+"/var/log/zope2.9/instance/*/Z2.log" "/var/log/zope2.9/instance/*/event.log"{
+    weekly
+    missingok
+    rotate 52
+    copytruncate
+    compress
+    delaycompress
+    notifempty
+    create 640
+    sharedscripts
+    postrotate
+    sh -c 'for i in /var/lib/zope2.9/instance/* ; do [ -d "$i/log" -a -x "$i/bin/zopectl" -a -r "/var/run/zope2.9/instance/$(basename $i).pid" ] && "$i"/bin/zopectl logreopen >/dev/null; done'
+    endscript
+}

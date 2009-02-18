@@ -14,8 +14,6 @@ class xen::dom0 {
 		require => Package["xen-utils-common"];
 	}
 
-	# OTHER XEN CONFIGURATION?
-
 	# Create directories (missing by default)
 	file {
 		"/etc/xen/auto":

@@ -21,4 +21,20 @@ class xen::dom0 {
 		mode => 644,
 		require => Package["xen-utils-common"];
 	}
+
+	# Create directories (missing by default)
+	file {
+		"/etc/xen/auto":
+			ensure => directory,
+			owner => "root",
+			group => "root",
+			mode => 755,
+			require => Package["xen-utils-common"];
+		"/etc/xen/domains":
+			ensure => directory,
+			owner => "root",
+			group => "root",
+			mode => 755,
+			require => Package["xen-utils-common"];
+	}
 }

@@ -6,7 +6,6 @@ class xen::dom0 {
 		ensure => installed,
 	}
 
-	# CHECK IF THIS IS COMPATIBLE WITH LENNY
 	file { "/etc/default/xendomains":
 		source => "puppet://puppet/xen/dom0/default/xendomains",
 		owner => "root",

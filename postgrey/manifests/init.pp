@@ -1,9 +1,10 @@
 class postgrey {
 	package { "postgrey":
-		ensure => installed,
+		ensure => installed;
 	}
 
 	service { "postgrey":
-		enable => true,
+		require => Package["postgrey"],
+		enable => true;
 	}
 }

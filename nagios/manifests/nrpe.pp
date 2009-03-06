@@ -87,6 +87,16 @@ class nagios::nrpe::plugins {
 			require => File["/usr/local/lib/nagios/plugins/check_drbd"];
 	}
 
+	# aMaVis checks
+	check {
+		"amavis_scanner":
+			command => '/usr/lib/nagios/plugins/check_smtp -H 127.0.0.1 -p 10024',
+			require => File["/etc/nagios/nrpe.d"];
+		"amavis_mta":
+			command => '/usr/lib/nagios/plugins/check_smtp -H 127.0.0.1 -p 10025',
+			require => File["/etc/nagios/nrpe.d"];
+	}
+
 	file { "/usr/local/lib/nagios/plugins/check_drbd":
 		source => "puppet://puppet/nagios/plugins/check_drbd",
 		owner => "root",

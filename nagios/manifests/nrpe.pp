@@ -110,6 +110,12 @@ class nagios::nrpe::plugins {
 		command => "/usr/lib/nagios/plugins/check_file_age -f /var/lib/puppet/state/state.yaml -w 14400 -c 21600",
 	}
 
+	# Check ClamAV socket file.
+	check {
+		"clamav_daemon_socket":
+			command => "/usr/lib/nagios/plugins/check_file_age -w 0 -c 0 -C 0 -f /var/run/clamav/clamd.ctl",
+	}
+
 	# Make sure the latest installed kernel is also the running kernel.
 	# (To reminds us to reboot a server after a kernel upgrade.)
 	check { "running_kernel":

@@ -116,6 +116,20 @@ class nagios::nrpe::plugins {
 			command => "/usr/lib/nagios/plugins/check_file_age -w 0 -c 0 -C 0 -f /var/run/clamav/clamd.ctl",
 	}
 
+	# Check software RAID arrays.
+	check {
+		"dmraid":
+			command => "sudo /usr/local/lib/nagios/plugins/check_dmraid",
+	}
+
+	file { "/usr/local/lib/nagios/plugins/check_dmraid":
+		source => "puppet://puppet/nagios/plugins/check_dmraid",
+		owner => "root",
+		group => "staff",
+		mode => 755,
+		require => File["/usr/local/lib/nagios/plugins"];
+	}
+
 	# Make sure the latest installed kernel is also the running kernel.
 	# (To reminds us to reboot a server after a kernel upgrade.)
 	check { "running_kernel":

@@ -130,6 +130,20 @@ class nagios::nrpe::plugins {
 		require => File["/usr/local/lib/nagios/plugins"];
 	}
 
+	# Check 3Ware RAID arrays.
+	check {
+		"3ware":
+			command => "sudo /usr/local/lib/nagios/plugins/check_3ware",
+	}
+
+	file { "/usr/local/lib/nagios/plugins/check_3ware":
+		source => "puppet://puppet/nagios/plugins/check_3ware",
+		owner => "root",
+		group => "staff",
+		mode => 755,
+		require => File["/usr/local/lib/nagios/plugins"];
+	}
+
 	# Make sure the latest installed kernel is also the running kernel.
 	# (To reminds us to reboot a server after a kernel upgrade.)
 	check { "running_kernel":

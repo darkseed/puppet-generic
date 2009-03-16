@@ -110,10 +110,12 @@ class nagios::nrpe::plugins {
 		command => "/usr/lib/nagios/plugins/check_file_age -f /var/lib/puppet/state/state.yaml -w 14400 -c 21600",
 	}
 
-	# Check ClamAV socket file.
+	# Check ClamAV socket file and update service.
 	check {
 		"clamav_daemon_socket":
-			command => "/usr/lib/nagios/plugins/check_file_age -w 0 -c 0 -C 0 -f /var/run/clamav/clamd.ctl",
+			command => "/usr/lib/nagios/plugins/check_file_age -w 0 -c 0 -C 0 -f /var/run/clamav/clamd.ctl";
+		"clamav_freshclam":
+			command => "/usr/lib/nagios/plugins/check_procs -C freshclam -w 1:1 -c 1:10";
 	}
 
 	# Check software RAID arrays.

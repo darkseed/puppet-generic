@@ -1,12 +1,18 @@
 class samba::common {
 	package {
-		"samba":
+		"samba-common":
 			ensure => installed;
 	}
 }
 
 class samba::server {
 	include samba::common
+
+	package {
+		"samba":
+			require => Package["samba-common"],
+			ensure => installed;
+	}
 
 	service {
 		"samba":

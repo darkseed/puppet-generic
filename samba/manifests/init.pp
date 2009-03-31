@@ -11,13 +11,14 @@ class samba::server {
 	service {
 		"samba":
 			subscribe => File["/etc/samba/smb.conf"],
+			pattern => "smbd",
 			ensure => running;
 			# TODO: FIX STATUS (Using Tim's patch?)
 	}
 
 	file {
 		"/etc/samba/smb.conf":
-			source => "puppet://puppet/samba/smb.conf",
+			source => "puppet://puppet/samba/samba/smb.conf",
 			mode => 644,
 			owner => "root",
 			group => "root",

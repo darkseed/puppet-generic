@@ -1,5 +1,5 @@
 class openssl::common {
-	package { ["openssl"]:
+	package { "openssl":
 		ensure => installed,
 	}
 }

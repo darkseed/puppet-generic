@@ -38,8 +38,11 @@ class xen::dom0::etch {
 	}
 	
 	# Architecture dependent packages
-	package { $archdependent:
-		ensure => installed,
+	package {
+		$archdependent:
+			ensure => installed;
+		"xen-utils-3.0.3-1":
+			ensure => installed;
 	}
 }
 
@@ -50,7 +53,10 @@ class xen::dom0::lenny {
 	}
 	
 	# Architecture dependent packages
-	package { $archdependent:
-		ensure => installed,
+	package {
+		$archdependent:
+			ensure => installed;
+		"xen-utils-3.2-1":
+			ensure => installed;
 	}
 }

@@ -7,6 +7,5 @@
 # (e.g., /etc/shadow, LDAP, Kerberos, etc.).  The default is to use the
 # traditional Unix authentication mechanisms.
 #
-auth	sufficient	pam_krb5.so minimum_uid=1000
 auth	sufficient	pam_ldap.so try_first_pass
 auth	required	pam_unix.so try_first_pass nullok_secure

@@ -31,6 +31,19 @@ class xen::dom0 {
 	}
 }
 
+class xen::domu {
+	$archdependent = $architecture ? {
+		i386  => "linux-modules-2.6-xen-686",
+		amd64 => "linux-modules-2.6-xen-amd64",
+	}
+
+	# Architecture dependent packages
+	package {
+		$archdependent:
+			ensure => installed;
+	}
+}
+
 class xen::dom0::etch {
 	$archdependent = $architecture ? {
 		i386  => ["xen-hypervisor-3.0.3-1-i386-pae", "linux-image-2.6-xen-686", "libc6-xen"],

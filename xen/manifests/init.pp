@@ -33,7 +33,7 @@ class xen::dom0 {
 
 class xen::dom0::etch {
 	$archdependent = $architecture ? {
-		i386  => ["xen-hypervisor-3.0.3-1-i386-pae", "linux-image-2.6-xen-686"],
+		i386  => ["xen-hypervisor-3.0.3-1-i386-pae", "linux-image-2.6-xen-686", "libc6-xen"],
 		amd64 => ["xen-hypervisor-3.0.3-1-amd64", "linux-image-2.6-xen-amd64"],
 	}
 	
@@ -45,7 +45,7 @@ class xen::dom0::etch {
 
 class xen::dom0::lenny {
 	$archdependent = $architecture ? {
-		i386  => ["xen-hypervisor-3.2-1-i386", "linux-image-2.6-xen-686"],
+		i386  => ["xen-hypervisor-3.2-1-i386", "linux-image-2.6-xen-686", "libc6-xen"],
 		amd64 => ["xen-hypervisor-3.2-1-amd64", "linux-image-2.6-xen-amd64"],
 	}
 	

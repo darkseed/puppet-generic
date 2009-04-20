@@ -1,6 +1,16 @@
 class openldap::client {
-        package { ["libldap2", "ldap-utils", "libnss-ldap", "libpam-ldap", "nscd"]:
+        package { ["ldap-utils", "libnss-ldap", "libpam-ldap", "nscd"]:
 		ensure => installed,
+	}
+
+	$libldap = $lsbdistcodename ? {
+		lenny => "libldap-2.4-2",
+		default => "libldap2",
+	}
+
+	package { $libldap:
+		ensure => installed,
+		alias => libldap,
 	}
 
 	service { "nscd":
@@ -26,7 +36,7 @@ class openldap::client {
 			owner => "root",
 			group => "root",
 			mode => 644,
-			require => Package["libldap2"];
+			require => Package["libldap"];
 		"/etc/pam_ldap.conf":
 			content => template("openldap/client/pam_ldap.conf"),
 			owner => "root",

@@ -1,5 +1,5 @@
 class squirrelmail {
-	package { "squirrelmail":
+	package { ["squirrelmail", "squirrelmail-locales"]:
 		ensure => installed,
 	}
 }

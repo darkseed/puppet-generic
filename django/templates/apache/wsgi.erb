@@ -1,0 +1,3 @@
+Alias /media <%= documentroot %>/media
+WSGIDaemonProcess <%= name %> processes=<%= wsgi_processes %> threads=<%= wsgi_threads %>
+WSGIScriptAlias <%= wsgi_path %> <%= script %>

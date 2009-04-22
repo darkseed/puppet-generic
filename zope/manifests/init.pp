@@ -91,7 +91,7 @@ class zope::server {
 			require => File["/var/lock/zope2.9"];
 	}
 
-	define instance($port, $ipaddress="127.0.0.1", $zeosocket=false, $products_from=false, $debugmode=false, $user="zope", $group="zope") {
+	define instance($port, $ipaddress="127.0.0.1", $zeosocket=false, $products_from=false, $debugmode=false, $zodbcachesize=20000, $user="zope", $group="zope") {
 		exec { "start-zope-instance-$name":
 			command => "/usr/bin/dzhandle -z 2.9 zopectl $name start",
 			refreshonly => true,

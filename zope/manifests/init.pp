@@ -253,7 +253,6 @@ class zope::zeo {
 			            File["/srv/zope2.9/zeo/$name/var"],
 			            File["/srv/zope2.9/zeo/$name/bin/zeoctl"],
 			            File["/srv/zope2.9/zeo/$name/bin/runzeo"],
-				    File["/var/run/zope2.9/instance"],
 				    File["/etc/zope2.9/$name/zeo.conf"]],
 		}
 

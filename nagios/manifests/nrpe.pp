@@ -120,8 +120,14 @@ class nagios::nrpe::plugins {
 
 	# Check software RAID arrays.
 	check {
-		"dmraid":
-			command => "sudo /usr/local/lib/nagios/plugins/check_dmraid",
+		"mdraid":
+			command => "sudo /usr/local/lib/nagios/plugins/check_mdraid",
+	}
+
+	# Check STP network.
+	check {
+		"stp_bridges":
+			command => "/usr/local/lib/nagios/plugins/check_stp_bridges.sh",
 	}
 
 	file { "/usr/local/lib/nagios/plugins/check_dmraid":

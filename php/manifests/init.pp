@@ -1,10 +1,4 @@
 class php::common {
-	file { "/etc/php$phpversion/conf.d/security.ini":
-		owner => "root",
-		group => "root",
-		mode => 644,
-		source => "puppet://puppet/php/shared/conf.d/security.ini",
-	}
 }
 
 class php::php5::common {

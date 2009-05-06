@@ -130,8 +130,16 @@ class nagios::nrpe::plugins {
 			command => "/usr/local/lib/nagios/plugins/check_stp_bridges.sh",
 	}
 
-	file { "/usr/local/lib/nagios/plugins/check_dmraid":
-		source => "puppet://puppet/nagios/plugins/check_dmraid",
+	file { "/usr/local/lib/nagios/plugins/check_mdraid":
+		source => "puppet://puppet/nagios/plugins/check_mdraid",
+		owner => "root",
+		group => "staff",
+		mode => 755,
+		require => File["/usr/local/lib/nagios/plugins"];
+	}
+
+	file { "/usr/local/lib/nagios/plugins/check_stp_bridges.sh":
+		source => "puppet://puppet/nagios/plugins/check_stp_bridges.sh",
 		owner => "root",
 		group => "staff",
 		mode => 755,

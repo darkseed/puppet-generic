@@ -5,6 +5,12 @@ class asterisk::server {
 		"asterisk-sounds-extra":
 			ensure => present;
 	}
+
+	service {
+		"asterisk":
+			require => Package["asterisk"],
+			ensure => running;
+	}
 }
 
 class asterisk::zaptel-module-xen {

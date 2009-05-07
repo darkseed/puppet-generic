@@ -3,4 +3,9 @@ class iaxmodem {
 		"iaxmodem":
 			ensure => present;
 	}
+
+	service {
+		"iaxmodem":
+			ensure => running;
+	}
 }

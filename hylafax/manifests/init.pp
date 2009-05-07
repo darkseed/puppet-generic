@@ -3,4 +3,11 @@ class hylafax::server {
 		"hylafax-server":
 			ensure => present;
 	}
+
+	service {
+		"hylafax":
+			require => Package["hylafax-server"],
+			pattern => "hfaxd",
+			ensure => running;
+	}
 }

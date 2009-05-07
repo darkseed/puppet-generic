@@ -6,6 +6,7 @@ class iaxmodem {
 
 	service {
 		"iaxmodem":
+			require => Package["iaxmodem"],
 			ensure => running;
 	}
 }

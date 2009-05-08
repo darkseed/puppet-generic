@@ -1,4 +1,36 @@
 class munin::client {
+	define plugin($ensure='present', $script_path='/usr/share/munin/plugins', $script=false) {
+		if $script {
+			$plugin_path = "$script_path/$script"
+		} else {
+			$plugin_path = "$script_path/$name"
+		}
+
+		file { "/etc/munin/plugins/$name":
+			ensure => $ensure ? {
+				'present' => $plugin_path,
+				'absent' => 'absent',
+			},
+			notify => Service["munin-node"],
+			require => [Package["munin-node"], File["/usr/local/share/munin/plugins"]],
+		}
+	}
+
+	define plugin::config($content, $section=false, $ensure='present') {
+		file { "/etc/munin/plugin-conf.d/$name":
+			ensure => $ensure,
+			owner => "root",
+			group => "root",
+			mode => 644,
+			content => $section ? {
+				false => "[${name}]\n${content}\n",
+				default => "[${section}]\n${content}\n",
+			},
+			require => Package["munin-node"],
+			notify => Service["munin-node"],
+		}
+	}
+
 	package { "munin-node":
 		ensure => installed,
 	}

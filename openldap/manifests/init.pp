@@ -13,9 +13,13 @@ class openldap::client {
 		alias => libldap,
 	}
 
+	# The 'require => Exec["clear-nscd-cache"]' makes sure the nscd cache
+	# gets cleared _before_ restarting nscd, but only if nscd.conf is
+	# changed (because of "refreshonly => true" for the exec).
 	service { "nscd":
 		ensure => running,
 		subscribe => [File["/etc/nscd.conf"], File["/etc/resolv.conf"]],
+		require => Exec["clear-nscd-cache"],
 	}
 
 	file { "/etc/nscd.conf":
@@ -24,6 +28,16 @@ class openldap::client {
 		group => "root",
 		mode => 644,
 		require => Package["nscd"],
+	}
+
+	# If the 'suggested-size' parameter in nscd.conf changes, the current
+	# persistent cache needs to be blown away to allow nscd to rebuild the
+	# databases with the new size.
+	exec { "clear-nscd-cache":
+		command => "/bin/rm -f /var/cache/nscd/*",
+		logoutput => true,
+		refreshonly => true,
+		subscribe => File["/etc/nscd.conf"],
 	}
 
 	# Do a require on the packages below to enforce the order: first

@@ -75,8 +75,9 @@ class openldap::client {
 	# somewhat awkward, but I don't know a better way to do this, since a
 	# node can be a ldap client or a kerberos client, or neither, or both.
 	file { "/etc/pam.d":
-		recurse => true,
 		source => "puppet://puppet/openldap/client/pam.d",
+		recurse => true,
+		mode => 644,
 		owner => "root",
 		group => "root",
 	}

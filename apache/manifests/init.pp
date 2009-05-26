@@ -96,14 +96,6 @@ class apache {
       require => Package["apache2"],
    }
 
-   file { "/etc/apache2/conf.d/security":
-      source => "puppet://puppet/apache/conf.d/security",
-      mode => 644,
-      owner => "root",
-      group => "root",
-      notify => Exec["reload-apache2"],
-   }
-
    if !$apache_ports {
       $apache_ports = 80
    }

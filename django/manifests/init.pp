@@ -22,13 +22,20 @@ class django::wsgi {
 
 	define site($wsgi_script=false, $wsgi_processes=2, $wsgi_threads=2,
 		    $wsgi_path="/", $documentroot="/var/www", $aliases=false,
-		    $address="*:80", $ensure="present") {
+		    $address="*", $ssl=false, $ensure="present") {
 		if ($wsgi_script == false) {
 			$script = "$documentroot/dispatch.wsgi"
 		}
 
+		if ($ssl) {
+			$template = "apache/sites-available/simple-ssl.erb"
+		} else {
+			$template = "apache/sites-available/simple.erb"
+		}
+
 		apache::site_config { $name:
 			address => $address,
+			template => $template,
 			serveralias => $aliases,
 			documentroot => $documentroot,
 		}

@@ -41,9 +41,6 @@ do_start()
 	#   2 if daemon could not be started
 	cp -a /var/lib/munin /dev/shm || return 2
 	chown -R munin:munin /dev/shm/munin || return 2
-	chown -R munin:munin /var/www/munin || return 2
-	chown -R munin:munin /var/log/munin || return 2
-	chown -R munin:munin /var/lib/munin || return 2
 }
 
 #

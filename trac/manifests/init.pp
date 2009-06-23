@@ -20,6 +20,7 @@ class trac {
 		owner => "root",
 		group => "root",
 		mode => 644,
+		require => Package["trac"],
 	}
 
 	# Directory in which Trac can unpack any Python Eggs
@@ -52,6 +53,7 @@ class trac {
 		        command => "/usr/bin/trac-admin $tracdir initenv $name sqlite:db/trac.db svn $svndir /usr/share/trac/templates",
 			logoutput => false,
 			creates => "$tracdir/conf/trac.ini",
+			require => Package["trac"],
 		}
 
 		# www-data needs read and write access to the trac database,

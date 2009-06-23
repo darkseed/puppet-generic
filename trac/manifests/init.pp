@@ -1,10 +1,9 @@
-class trac {
-	package { ["trac", "enscript", "sqlite3", "python-setuptools"]:
-		ensure => installed,
-	}
+class trac::lenny {
+}
 
-	# Move the shared trac configuration to /etc/trac/trac.ini,
-	# where it belongs.
+class trac::etch {
+	# Move the shared trac configuration to /etc/trac/trac.ini, where it
+	# belongs.
 	file { "/usr/share/trac/conf/trac.ini":
 		ensure => "/etc/trac/trac.ini",
 		owner => "root",
@@ -12,6 +11,14 @@ class trac {
 		mode => 644,
 		backup => false,
 		require => File["/etc/trac/trac.ini"],
+	}
+}
+
+class trac {
+	include "trac::$lsbdistcodename"
+
+	package { ["trac", "enscript", "sqlite3", "python-setuptools"]:
+		ensure => installed,
 	}
 
 	# Shared Trac configuration
@@ -50,7 +57,10 @@ class trac {
 
 		# Create the Trac environment
 		exec { "create-trac-$name":
-		        command => "/usr/bin/trac-admin $tracdir initenv $name sqlite:db/trac.db svn $svndir /usr/share/trac/templates",
+			command => $lsbdistcodename ? {
+				"etch" => "/usr/bin/trac-admin $tracdir initenv $name sqlite:db/trac.db svn $svndir /usr/share/trac/templates",
+				"lenny" => "/usr/bin/trac-admin $tracdir initenv $name sqlite:db/trac.db svn $svndir",
+			},
 			logoutput => false,
 			creates => "$tracdir/conf/trac.ini",
 			require => Package["trac"],

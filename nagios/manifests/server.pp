@@ -6,7 +6,7 @@ class nagios::server {
 		nagios_command { "check_$name":
 			command_line => $command,
 			target => "/etc/nagios-plugins/config/$name.cfg",
-			notify => Service["nagios3"],
+			notify => Exec["reload-nagios3"],
 			require => Package["nagios-plugins-basic"],
 		}
 	}

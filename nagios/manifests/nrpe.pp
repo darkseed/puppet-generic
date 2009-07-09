@@ -35,16 +35,31 @@ class nagios::nrpe {
 		unless => "/bin/grep -q ^nrpe /etc/services",
 	}
 
+	# Need to bind to the IP address for this host only, if this is a
+	# vserver.  Otherwise, just listen on all IP addresses, to simplify the
+	# Nagios configuration.
 	exec { "update-inetd-add-nrpe":
-		command => "/usr/sbin/update-inetd --add '$ipaddress:nrpe stream tcp nowait nagios /usr/sbin/tcpd /usr/sbin/nrpe -c /etc/nagios/nrpe.cfg --inetd'",
-		unless => "/bin/grep -q $ipaddress:nrpe /etc/inetd.conf",
+		command => $virtual ? {
+			vserver => "/usr/sbin/update-inetd --add '$ipaddress:nrpe stream tcp nowait nagios /usr/sbin/tcpd /usr/sbin/nrpe -c /etc/nagios/nrpe.cfg --inetd'",
+			default => "/usr/sbin/update-inetd --add 'nrpe stream tcp nowait nagios /usr/sbin/tcpd /usr/sbin/nrpe -c /etc/nagios/nrpe.cfg --inetd'",
+		},
+		unless => $virtual ? {
+		 	vserver => "/bin/grep -E -q '^#?\s*(<off>#)?\s*$ipaddress:nrpe /etc/inetd.conf",
+		 	default => "/bin/grep -E -q '^#?\s*(<off>#)?\s*nrpe' /etc/inetd.conf",
+		},
 		require => [Service["nagios-nrpe-server"], Exec["update-services-add-nrpe"]],
 		notify => Service["openbsd-inetd"],
 	}
 
 	exec { "update-inetd-enable-nrpe":
-		command => "/usr/sbin/update-inetd --enable $ipaddress:nrpe",
-		unless => "/bin/grep -q ^$ipaddress:nrpe /etc/inetd.conf",
+		command => virtual ? {
+			vserver => "/usr/sbin/update-inetd --enable $ipaddress:nrpe",
+			default => "/usr/sbin/update-inetd --enable nrpe",
+		},
+		unless => virtual ? {
+			vserver => "/bin/grep -q ^$ipaddress:nrpe /etc/inetd.conf",
+			default => "/bin/grep -q ^nrpe /etc/inetd.conf",
+		},
 		require => Exec["update-inetd-add-nrpe"],
 		notify => Service["openbsd-inetd"],
 	}

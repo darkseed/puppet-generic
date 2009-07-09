@@ -81,6 +81,7 @@ class nagios::server::plugins {
 
 	file {
 		"/usr/local/lib/nagios/plugins/check_weak_ssh_host_key":
+			source => "puppet://puppet/nagios/plugins/check_weak_ssh_host_key",
 			owner => "root",
 			group => "staff",
 			mode => 755,

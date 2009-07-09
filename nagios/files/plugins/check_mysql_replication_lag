@@ -1,0 +1,134 @@
+#!/bin/sh
+#
+# Check if the MySQL heartbeat (updated with mk-heartbeat) is in the specified range.
+
+OK=0;
+WARNING=1;
+CRITICAL=2;
+UNKNOWN=3;
+
+usage ()
+{
+        echo "Usage: check_mysql_heartbeat [-w <secs[:secs]>] [-c <secs[:secs]>]"
+	echo "                             [--host hostname] [--user username]"
+	echo "                             [--database db]"
+	echo "                             [--defaults-file /path/to/file]"
+	echo
+	echo "-w <secs[:secs]>  Threshold for warning. Specify a range with"
+	echo "                  lower:upper. If a single value is given, it"
+	echo "                  will be used as the upper limit."
+	echo
+	echo "-c <secs[:secs]>  Threshold for critical. Specify a range with"
+	echo "                  lower:upper. If a single value is given, it"
+	echo "                  will be used as the upper limit."
+	echo
+	echo "--host, --user, --database"
+	echo "                  Details for the MySQL connection."
+	echo
+	echo "--defaults-file"
+	echo "                  A MySQL configuration file, in the format as"
+	echo "                  used for mysql --defaults-file."
+}
+
+args=$(getopt -un check_mysql_heartbeat -o w:c:h -l host:,user:,database:,defaults-file: -- $*)
+opts=""
+
+if [ $? != 0 ]; then
+        echo
+        usage
+        exit $UNKNOWN
+fi
+
+set -- $args
+
+for a; do
+        case "$a" in
+                -h|--help)
+                        usage
+                        exit 1;;
+                -w)
+                        shift
+                        warning=$1
+                        shift;;
+                -c)
+                        shift
+                        critical=$1
+                        shift;;
+                --host)
+                        shift
+                        opts="$opts --host $1"
+                        shift;;
+                --user)
+                        shift
+                        opts="$opts --user $1"
+                        shift;;
+                --database)
+                        shift
+                        opts="$opts --database $1"
+                        shift;;
+                --defaults-file)
+                        shift
+                        opts="$opts --defaults-file $1"
+                        shift;;
+                --)
+                        shift; break;;
+        esac
+done
+
+# Maybe I should have just done this in Perl instead...
+
+if [ -n "$warning" ]; then
+	if echo "$warning" | grep -q '^[0-9]\+:[0-9]\+$'; then
+		old_ifs="$IFS"; IFS=:
+		set $warning
+		warning_lower=$1
+		warning_upper=$2
+		IFS=$old_ifs
+	elif echo "$warning" | grep -q '^[0-9]\+$'; then
+		warning_lower=0
+		warning_upper=$warning
+	else
+		usage
+		exit $UNKNOWN
+	fi
+fi
+
+if [ -n "$critical" ]; then
+	if echo "$critical" | grep -q '^[0-9]\+:[0-9]\+$'; then
+		old_ifs="$IFS"; IFS=:
+		set $critical
+		critical_lower=$1
+		critical_upper=$2
+		IFS=$old_ifs
+	elif echo "$critical" | grep -q '^[0-9]\+$'; then
+		critical_lower=0
+		critical_upper=$critical
+	else
+		usage
+		exit $UNKNOWN
+	fi
+fi
+
+lag=$(mk-heartbeat $opts --check)
+
+if [ -z "$lag" ]; then
+	echo "UNKNOWN: Could not determine the lag time."
+	exit $UNKNOWN
+fi
+
+if [ $lag -gt $critical_upper ]; then
+	echo "CRITICAL: MySQL replication lag ($lag) is outside the specified range ($critical)"
+	exit $CRITICAL
+elif [ $lag -lt $critical_lower ]; then
+	echo "CRITICAL: MySQL replication lag ($lag) is outside the specified range ($critical)"
+	exit $CRITICAL
+elif [ $lag -gt $warning_upper ]; then
+	echo "WARNING: MySQL replication lag ($lag) is outside the specified range ($warning)"
+	exit $WARNING
+elif [ $lag -lt $warning_lower ]; then
+	echo "WARNING: MySQL replication lag ($lag) is outside the specified range ($warning)"
+	exit $WARNING
+fi
+
+echo "OK: MySQL replication lag ($lag) is inside the specified range ($warning)"
+exit $OK

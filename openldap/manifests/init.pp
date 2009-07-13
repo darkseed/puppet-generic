@@ -90,7 +90,30 @@ class openldap::client {
 }
 
 class openldap::server {
-	define ldap::server::proxy_ad($ad_server_uri, $suffix) {
+	define schema($source=false, $ensure=enabled) {
+		if $source {
+			file { "/etc/ldap/schema/$name.schema":
+				source => $source,
+				owner => "root",
+				group => "root",
+				mode => 644,
+				notify => Service["slapd"];
+			}
+		}
+
+		file { "/etc/ldap/schema-enabled/$name.schema":
+			ensure => $ensure ? {
+				"enabled" => "/etc/ldap/schema/$name.schema",
+				"disabled" => absent,
+			},
+			owner => "root",
+			group => "root",
+			mode => 644,
+			notify => Service["slapd"];
+		}
+	}
+
+	define proxy_ad($ad_server_uri, $suffix) {
 		file { "/etc/ldap/slapd.db.d/proxy_ad_$name.conf":
 			owner => "root",
 			group => "root",
@@ -101,7 +124,7 @@ class openldap::server {
 		}
 	}
 
-	define ldap::server::database($directory="", $suffix="", $admins=false, $storage_type="bdb") {
+	define database($directory="", $suffix="", $admins=false, $storage_type="bdb") {
 		# Ugly hack
 		if $directory {
 			$database_dir = $directory
@@ -137,12 +160,23 @@ class openldap::server {
 		ensure => running,
 	}
 
+	# Schema to enable by default
+	schema { ["core", "cosine", "nis", "inetorgperson"]:
+		ensure => enabled,
+	}
+
 	file {
 		"/etc/ldap/slapd.conf":
 			source => ["puppet://puppet/openldap/server/$lsbdistcodename/slapd.conf", "puppet://puppet/openldap/server/slapd.conf"],
 			owner => "openldap",
 			group => "root",
 			mode => 640,
+			require => Package["slapd"];
+		"/etc/ldap/schema-enabled":
+			ensure => directory,
+			owner => "root",
+			group => "root",
+			mode => 755,
 			require => Package["slapd"];
 		"/etc/ldap/slapd.main.d":
 			ensure => directory,

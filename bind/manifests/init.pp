@@ -1,5 +1,5 @@
 class bind {
-	package { ["bind9", "make"]:
+	package { "bind9":
 		ensure => installed,
 	}
 

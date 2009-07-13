@@ -3,12 +3,6 @@ class openldap::client {
 		ensure => installed,
 	}
 
-	# Need to move this to a separate modules - it conflicts with the bind
-	# modules which also needs make.
-	package { "make":
-		ensure => installed,
-	}
-
 	$libldap = $lsbdistcodename ? {
 		lenny => "libldap-2.4-2",
 		default => "libldap2",

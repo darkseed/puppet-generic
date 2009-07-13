@@ -1,7 +1,0 @@
-#!/bin/sh
-
-for slapdconf in /etc/ldap/slapd.conf.d/*; do
-	cat << EOF
-include "$slapdconf"
-EOF
-done

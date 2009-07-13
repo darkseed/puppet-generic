@@ -1,0 +1,8 @@
+#!/bin/sh
+
+dir="$1"
+test -d $dir || exit 0
+
+for slapdconf in $dir/*; do
+	echo include "/etc/ldap/$slapdconf"
+done

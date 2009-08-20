@@ -1,0 +1,22 @@
+<!--
+    Context configuration file for the Tomcat Administration Web App
+-->
+
+<Context path="<%= path %>" docBase="/usr/share/tomcat5.5/server/webapps/admin"
+         debug="0" privileged="true" allowLinking="true">
+
+  <!-- make symlinks work in Tomcat 5 -->
+  <Resources className="org.apache.naming.resources.FileDirContext"
+             allowLinking="true" />
+
+  <!-- Uncomment this Valve to limit access to the Admin app to localhost
+       for obvious security reasons. Allow may be a comma-separated list of
+       hosts (or even regular expressions).
+  -->
+  <Valve className="org.apache.catalina.valves.RemoteAddrValve"
+         allow="<%= allow %>"/>
+
+  <Logger className="org.apache.catalina.logger.FileLogger"
+          prefix="admin_" suffix=".log" timestamp="true"/>
+
+</Context>

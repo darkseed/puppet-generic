@@ -1,0 +1,29 @@
+#!/bin/sh
+#
+# Simple wrapper to start all the tomcat instances
+#
+# Written by Tim Stoop <tim@kumina.nl>.
+#
+
+set -e
+
+INSTANCES=/etc/tomcat5.5/instances
+INITSCRIPT=/etc/init.d/tomcat5.5.multi
+
+
+case "$1" in
+  start)
+	for instance in `cat $INSTANCES | grep -v ^#`; do
+		$INITSCRIPT start $instance
+        done
+	;;
+  stop)
+	for instance in `cat $INSTANCES | grep -v ^#`; do
+		$INITSCRIPT stop $instance
+        done
+	;;
+  *)
+	echo "This script only implements start and stop. Sorry."
+esac
+
+exit 0

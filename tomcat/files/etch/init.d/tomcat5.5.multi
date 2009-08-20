@@ -1,0 +1,257 @@
+#!/bin/sh
+#
+# /etc/init.d/tomcat5.5 -- startup script for the Tomcat 5 servlet engine
+#
+# Written by Miquel van Smoorenburg <miquels@cistron.nl>.
+# Modified for Debian GNU/Linux	by Ian Murdock <imurdock@gnu.ai.mit.edu>.
+# Modified for Tomcat by Stefan Gybas <sgybas@debian.org>.
+# Modified for multiple Tomcat instance by Tim Stoop <tim@kumina.nl>.
+#
+### BEGIN INIT INFO
+# Provides:          tomcat
+# Required-Start:    $local_fs $remote_fs $network
+# Required-Stop:     $local_fs $remote_fs $network
+# Should-Start:      $named
+# Should-Stop:       $named
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start Tomcat.
+# Description:       Start the Tomcat servlet engine.
+### END INIT INFO
+
+set -e
+
+PATH=/bin:/usr/bin:/sbin:/usr/sbin
+NAME=tomcat5.5
+DESC="Tomcat servlet engine"
+CATALINA_HOME=/usr/share/$NAME
+DAEMON=$CATALINA_HOME/bin/catalina.sh
+DEFAULT=/etc/default/$NAME
+CONFIGDIR=/etc/tomcat5.5
+INSTANCE=$(basename $2)
+
+. /lib/lsb/init-functions
+. /etc/default/rcS
+
+# The following variables can be overwritten in $DEFAULT
+
+# Run Tomcat 5 as this user ID
+TOMCAT5_USER=tomcat55
+
+# The first existing directory is used for JAVA_HOME (if JAVA_HOME is not
+# defined in $DEFAULT)
+JDK_DIRS="/usr/lib/jvm/java-1.5.0-sun /usr/lib/j2sdk1.4-sun /usr/lib/j2sdk1.4-blackdown /usr/lib/j2se/1.4 /usr/lib/j2sdk1.5-sun /usr/lib/j2sdk1.3-sun /usr/lib/j2sdk1.3-blackdown /usr/lib/j2sdk1.5-ibm /usr/lib/j2sdk1.4-ibm /usr/lib/jvm/java-gcj /usr/lib/kaffe"
+
+# Directory for per-instance configuration files and webapps
+CATALINA_BASE=/var/lib/tomcat5.5
+
+# Use the Java security manager? (yes/no)
+TOMCAT5_SECURITY=yes
+
+# Timeout in seconds for the shutdown of all webapps
+TOMCAT5_SHUTDOWN=30
+
+# End of variables that can be overwritten in $DEFAULT
+
+# overwrite settings from default file
+if [ -f "$DEFAULT" ]; then
+	. "$DEFAULT"
+fi
+
+# If we're starting up a specific instance, source that config
+if [ -f "$CONFIGDIR/$INSTANCE.cfg" ]; then
+	. "$CONFIGDIR/$INSTANCE.cfg"
+else
+	echo "Can't find configuration for $2 (looking for $CONFIGDIR/$INSTANCE.cfg)."
+	exit 1
+fi
+
+test -f $DAEMON || exit 0
+
+[ -z "$TOMCAT5_USER" ] && TOMCAT5_USER=tomcat55
+
+# Look for the right JVM to use
+for jdir in $JDK_DIRS; do
+	if [ -r "$jdir/bin/java" -a -z "${JAVA_HOME}" ]; then
+		JAVA_HOME_TMP="$jdir"
+		# checks for a real JDK like environment, needed to check if 
+		# really the java-gcj-compat-dev package is installed
+		if [ -r "$jdir/bin/jdb" ]; then
+			JAVA_HOME="$JAVA_HOME_TMP"
+		fi
+	fi
+done
+export JAVA_HOME
+
+# Set java.awt.headless=true if CATALINA_OPTS is not set so the
+# Xalan XSL transformer can work without X11 display on JDK 1.4+
+# It also looks like the default heap size of 64M is not enough for most cases
+# se the maximum heap size is set to 128M
+if [ -z "$CATALINA_OPTS" ]; then
+	CATALINA_OPTS="-Djava.awt.headless=true -Xmx128M"
+fi
+
+# Set the JSP compiler if set in the tomcat5.5.default file
+if [ -n "$JSP_COMPILER" ]; then
+	CATALINA_OPTS="$CATALINA_OPTS -Dbuild.compiler=$JSP_COMPILER"
+fi
+
+# Define other required variables
+CATALINA_PID="$CATALINA_BASE/temp/$NAME.pid"
+STARTUP_OPTS=""
+if [ "$TOMCAT5_SECURITY" = "yes" ]; then
+	STARTUP_OPTS="-security"
+fi
+
+# Look for Java Secure Sockets Extension (JSSE) JARs
+if [ -z "${JSSE_HOME}" -a -r "${JAVA_HOME}/jre/lib/jsse.jar" ]; then
+	JSSE_HOME="${JAVA_HOME}/jre/"
+fi
+
+export CATALINA_HOME CATALINA_BASE CATALINA_OPTS CATALINA_PID JSSE_HOME
+
+tomcat_start()
+{
+	# Set the JMX options on startup only
+	if [ -n "$JMX_OPTS" ]; then
+		CATALINA_OPTS="$CATALINA_OPTS $JMX_OPTS"
+		export CATALINA_OPTS
+	fi
+
+	# Set the remote debugging options on startup only
+	if [ -n "$DEBUG_OPTS" ]; then
+		CATALINA_OPTS="$CATALINA_OPTS $DEBUG_OPTS"
+		export CATALINA_OPTS
+	fi
+
+	if start-stop-daemon --test --start --pidfile "$CATALINA_PID" \
+		--user $TOMCAT5_USER --startas "$JAVA_HOME/bin/java" \
+		>/dev/null; then
+
+		# Create catalina.policy (for the security manager)
+		rm -f "$CATALINA_BASE/conf/catalina.policy"
+		umask 002
+		echo "// AUTO-GENERATED FILE -- DO NOT EDIT!" \
+			> "$CATALINA_BASE/conf/catalina.policy"
+		echo "// Edit the files in /etc/tomcat5.5/policy.d/ instead" \
+			>> "$CATALINA_BASE/conf/catalina.policy"
+		echo ""  >> "$CATALINA_BASE/conf/catalina.policy"
+		cat /etc/tomcat5.5/policy.d/*.policy \
+			>> "$CATALINA_BASE/conf/catalina.policy"
+
+		# Clean up and set permissions on required files
+		rm -rf "$CATALINA_BASE"/temp/* \
+			"$CATALINA_BASE/logs/catalina.out"
+		mkfifo -m700 "$CATALINA_BASE/logs/catalina.out"
+		chown --dereference "$TOMCAT5_USER" "$CATALINA_BASE/conf" \
+			"$CATALINA_BASE/logs" "$CATALINA_BASE/temp" \
+			"$CATALINA_BASE/webapps" "$CATALINA_BASE/work" \
+			"$CATALINA_BASE/logs/catalina.out" || true
+
+		# Look for rotatelogs/rotatelogs2
+		if [ -x /usr/sbin/rotatelogs ]; then
+			ROTATELOGS=/usr/sbin/rotatelogs
+		else
+			ROTATELOGS=/usr/sbin/rotatelogs2
+		fi
+
+		# -p preserves the environment (for $JAVA_HOME etc.)
+		# -s is required because tomcat5.5's login shell is /bin/false
+		su -p -s /bin/sh $TOMCAT5_USER \
+				-c "$ROTATELOGS \"$CATALINA_BASE/logs/catalina_%F.log\" 86400" \
+				< "$CATALINA_BASE/logs/catalina.out" &
+		su -p -s /bin/sh $TOMCAT5_USER \
+			-c "\"$DAEMON\" start $STARTUP_OPTS" \
+			>> "$CATALINA_BASE/logs/catalina.out" 2>&1
+	else
+		log_progress_msg "(already running)"
+	fi
+}
+
+tomcat_stop()
+{
+	if start-stop-daemon --test --start --pidfile "$CATALINA_PID" \
+		--user "$TOMCAT5_USER" --startas "$JAVA_HOME/bin/java" \
+		>/dev/null; then
+		log_progress_msg "(not running)"
+	else
+		su -p -s /bin/sh $TOMCAT5_USER -c "\"$DAEMON\" stop" \
+			>/dev/null 2>&1 || true
+		# Fallback to kill the JVM process in case stopping didn't work
+		sleep 1
+		while ! start-stop-daemon --test --start \
+			--pidfile "$CATALINA_PID" --user "$TOMCAT5_USER" \
+			--startas "$JAVA_HOME/bin/java" >/dev/null; do
+			sleep 1
+			log_progress_msg "."
+			TOMCAT5_SHUTDOWN=`expr $TOMCAT5_SHUTDOWN - 1` || true
+			if [ $TOMCAT5_SHUTDOWN -le 0 ]; then
+				log_progress_msg "(killing)"
+				start-stop-daemon --stop --signal 9 --oknodo \
+					--quiet --pidfile "$CATALINA_PID" \
+					--user "$TOMCAT5_USER"
+			fi
+		done
+		rm -f "$CATALINA_PID" "$CATALINA_BASE/logs/catalina.out"
+	fi
+}
+
+case "$1" in
+  start)
+	if [ -z "$JAVA_HOME" ]; then
+		log_failure_msg "Not starting Tomcat: no Java Development Kit found."
+		exit 1
+	fi
+
+	if [ ! -d "$CATALINA_BASE/conf" ]; then
+		log_failure_msg "Not starting Tomcat: invalid CATALINA_BASE specified."
+		exit 1
+	fi
+
+	log_daemon_msg "Starting $DESC" "$INSTANCE"
+	tomcat_start
+	log_end_msg 0
+	;;
+  stop)
+	log_daemon_msg "Stopping $DESC" "$INSTANCE"
+	tomcat_stop
+	log_end_msg 0
+	;;
+   status)
+        if start-stop-daemon --test --start --pidfile "$CATALINA_PID" \
+		--user $TOMCAT5_USER --startas "$JAVA_HOME/bin/java" \
+		>/dev/null; then
+
+		if [ -f "$CATALINA_PID" ]; then
+		    log_success_msg "$DESC is not running, but pid file exists."
+		    exit 1
+		else
+		    log_success_msg "$DESC is not running."
+		    exit 3
+		fi
+	else
+		PID=`cat $CATALINA_PID`
+		log_success_msg "$DESC is running with Java pid $PID"
+		exit 0
+	fi
+        ;;
+  reload)
+	log_failure_msg "Reload is not implemented!"
+	exit 3
+  	;;
+  restart|force-reload)
+	log_daemon_msg "Stopping $DESC" "$INSTANCE"
+	tomcat_stop
+	log_end_msg 0
+	sleep 1
+	log_daemon_msg "Starting $DESC" "$INSTANCE"
+	tomcat_start
+	log_end_msg 0
+	;;
+  *)
+	log_success_msg "Usage: $0 {start|stop|restart|force-reload|status}"
+	exit 1
+	;;
+esac
+
+exit 0

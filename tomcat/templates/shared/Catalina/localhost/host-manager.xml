@@ -1,0 +1,8 @@
+<!--
+    Context configuration file for the Tomcat Host Manager Web App
+-->
+
+<Context path="<%= path %>" docBase="/usr/share/tomcat5.5/server/webapps/host-manager"
+        debug="0" privileged="true" antiResourceLocking="false" antiJARLocking="false">
+
+</Context>

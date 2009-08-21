@@ -1,0 +1,25 @@
+[mysqld]
+<% if has_variable?("mysql_bin_logging") && mysql_bin_logging -%>
+# Put the binary logs in the MySQL data dir, which makes sure the binary logs
+# are always on the same filesystem as the data directory.  This allows us to
+# initialize slaves with the data on the master as follows:
+#
+#  1.  On the master, issue a "FLUSH TABLES WITH READ LOCK".  Make sure the
+#      MySQL client with which the command was issued keeps its session open.
+#  2.  On the master, create an LVM snapshot of the filesystem on which
+#      /var/lib/mysql resides.
+#  3.  On the MySQL client which did the "FLUSH TABLES WITH READ LOCK", issue a
+#      "UNLOCK TABLES", or close the session by exiting the MySQL client.
+#  4.  Mount the LVM snapshot at e.g. /mnt.
+#  5.  Copy the MySQL data dir from /mnt to the slave.
+#  6.  Unmount and remove the snapshot.
+#  7.  Set the replication settings on the slave with "CHANGE MASTER TO".  Set
+#      MASTER_LOG_FILE to the most recent binary log file. We can use the file
+#      size of the binary log from the copy as the value for MASTER_LOG_POS.  
+#  8.  Remove the MySQL binary logs on the slave: they're no longer needed.
+log_bin			= mysql-bin
+expire_logs_days	= 10
+max_binlog_size		= 100M
+<% else -%>
+# No binary logging
+<% end -%>

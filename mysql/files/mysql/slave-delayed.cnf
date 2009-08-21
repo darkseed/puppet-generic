@@ -1,0 +1,3 @@
+[mysqld]
+# Allow mk-slave-delay to control starting/stopping the replication.
+skip-slave-start

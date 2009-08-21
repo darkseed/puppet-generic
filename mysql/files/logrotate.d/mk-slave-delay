@@ -1,0 +1,12 @@
+/var/log/mk-slave-delay.log {
+	rotate 4
+	weekly
+	compress
+	missingok
+	create 0640 root root
+	notifempty
+
+	postrotate
+		[ -e /etc/init.d/mk-slave-delay ] && /etc/init.d/mk-slave-delay restart >/dev/null || true
+	endscript
+}

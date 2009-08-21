@@ -39,7 +39,8 @@ do_start()
 	#   0 if daemon has been started
 	#   1 if daemon was already running
 	#   2 if daemon could not be started
-	cp -a /var/lib/munin /dev/shm || return 2
+	mkdir -p /dev/shm/munin || return 2
+	rsync -a /var/lib/munin/ /dev/shm/munin || return 2
 	chown -R munin:munin /dev/shm/munin || return 2
 }
 
@@ -54,7 +55,7 @@ do_stop()
 	#   2 if daemon could not be stopped
 	#   other if a failure occurred
 	test -x /usr/bin/rsync || return 2
-	rsync -a /dev/shm/munin /var/lib || return 2
+	rsync -a /dev/shm/munin/ /var/lib/munin || return 2
 }
 
 case "$1" in

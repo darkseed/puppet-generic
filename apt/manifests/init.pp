@@ -52,7 +52,7 @@ class apt {
 	# Increase the available cachesize
 	file { "/etc/apt/apt.conf.d/50cachesize":
 		ensure => file,
-		content => "APT::Cache-Limit \"16777216\";\n",
+		content => "APT::Cache-Limit \"33554432\";\n",
 		notify => Exec["/usr/bin/apt-get update"];
 	}
 

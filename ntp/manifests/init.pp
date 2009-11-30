@@ -4,10 +4,11 @@ class ntp {
 	}
 
 	file { "/etc/ntp.conf":
-		source  => "puppet://puppet/ntp/ntp.conf",
 		owner   => "root",
 		group   => "root",
+		mode    => 644,
 		require => Package["ntp"],
+                checksum => "md5",
 	}
 
 	service { "ntp":

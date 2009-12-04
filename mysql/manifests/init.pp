@@ -38,11 +38,11 @@ class mysql::server {
 	}
 
 	if ($mysql_bindaddress) {
-		file { "/etc/mysql/conf.d/bindaddress.cnf":
+		file { "/etc/mysql/conf.d/bind-address.cnf":
 			mode => 644,
 			owner => "root",
 			group => "root",
-			content => "[mysqld]\nbindaddress = $mysql_bindaddress\n",
+			content => "[mysqld]\nbind-address = $mysql_bindaddress\n",
 			notify => Service["mysql"],
 		}
 	}

@@ -37,6 +37,15 @@ class mysql::server {
 		}
 	}
 
+	if ($mysql_bindaddress) {
+		file { "/etc/mysql/conf.d/bindaddress.cnf":
+			mode => 644,
+			owner => "root",
+			group => "root",
+			content => "[mysqld]\nbindaddress = $mysql_bindaddress\n",
+			notify => Service["mysql"],
+		}
+	}
 	file { "/etc/mysql/conf.d/binary-logging.cnf":
 		mode => 644,
 		owner => "root",

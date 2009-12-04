@@ -15,6 +15,7 @@ class ntp {
 		hasrestart => true,
 		hasstatus  => true,
 		ensure 	   => running,
+		require    => Package["ntp"],
 	}
 }
 

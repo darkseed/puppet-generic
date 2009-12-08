@@ -34,3 +34,9 @@ class rsyslog::server {
 		notify => Service["rsyslog"],
 	}
 }
+
+class rsyslog::mysql {
+	package { "rsyslog-mysql":
+		ensure => installed,
+	}
+}

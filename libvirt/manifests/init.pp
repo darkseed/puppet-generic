@@ -25,7 +25,7 @@ class libvirt {
 		"/var/run/libvirt/libvirt-sock":
 			owner => "root",
 			group => "adm",
-			mode => 660,
+			mode => 770,
 			require => Package["libvirt-bin"];
 	}
 }

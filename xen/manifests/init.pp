@@ -13,6 +13,12 @@ class xen::dom0 {
 		mode => 644,
 		require => Package["xen-utils-common"];
 	}
+
+	exec {
+		"/bin/echo '(xend-unix-server yes)' >> '/etc/xen/xend-config.sxp'":
+			unless => "/bin/grep -Fx '(xend-unix-server yes)' /etc/xen/xend-config.sxp",
+			require => Package["xen-utils-common"];
+	}
 }
 
 class xen::domu {

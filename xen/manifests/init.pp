@@ -2,7 +2,7 @@ class xen::dom0 {
 	include "xen::dom0::$lsbdistcodename"
 
 	# Architecture independent packages
-	package { ["xen-utils-common", "xen-tools", "bridge-utils"]:
+	package { ["bridge-utils", "xen-utils-common"]:
 		ensure => installed,
 	}
 
@@ -12,22 +12,6 @@ class xen::dom0 {
 		group => "root",
 		mode => 644,
 		require => Package["xen-utils-common"];
-	}
-
-	# Create directories (missing by default)
-	file {
-		"/etc/xen/auto":
-			ensure => directory,
-			owner => "root",
-			group => "root",
-			mode => 755,
-			require => Package["xen-utils-common"];
-		"/etc/xen/domains":
-			ensure => directory,
-			owner => "root",
-			group => "root",
-			mode => 755,
-			require => Package["xen-utils-common"];
 	}
 }
 
@@ -56,6 +40,24 @@ class xen::dom0::etch {
 			ensure => installed;
 		"xen-utils-3.0.3-1":
 			ensure => installed;
+		"xen-tools":
+			ensure => installed;
+	}
+
+	# Create directories (missing by default)
+	file {
+		"/etc/xen/auto":
+			ensure => directory,
+			owner => "root",
+			group => "root",
+			mode => 755,
+			require => Package["xen-utils-common"];
+		"/etc/xen/domains":
+			ensure => directory,
+			owner => "root",
+			group => "root",
+			mode => 755,
+			require => Package["xen-utils-common"];
 	}
 }
 

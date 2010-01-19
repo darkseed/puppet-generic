@@ -4,10 +4,11 @@ class ferm {
 			ensure => installed;
 	}
 
-	service { 
-		"ferm":
+	exec { 
+		"reload-ferm":
+			command => "/usr/sbin/ferm /etc/ferm/ferm.conf",
 			subscribe => File["/etc/ferm/ferm.conf"],
-			require => Package["ferm"];
+			refreshonly => true;
 	}
 
 	file {

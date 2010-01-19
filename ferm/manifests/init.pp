@@ -6,7 +6,6 @@ class ferm {
 
 	service { 
 		"ferm":
-			hasrestart => true,
 			subscribe => File["/etc/ferm/ferm.conf"],
 			require => Package["ferm"];
 	}

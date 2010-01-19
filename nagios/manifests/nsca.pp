@@ -15,5 +15,6 @@ class nagios::nsca {
 		mode => 640,
 		owner => "root",
 		group => "nagios",
+		require => Package["nsca"];
 	}
 }

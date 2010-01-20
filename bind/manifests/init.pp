@@ -4,6 +4,11 @@ class bind {
 	}
 
 	file {
+		"/etc/bind/named.conf":
+			owner => root,
+			group => root,
+			mode => 644,
+			require => Package["bind9"];
 		"/etc/bind/named.conf.options":
 			source => "puppet://puppet/bind/named.conf.options",
 			owner => root,
@@ -35,6 +40,7 @@ class bind {
 		pattern => "/usr/sbin/named",
 		subscribe => [File["/etc/bind/named.conf.local"],
 		              File["/etc/bind/named.conf.options"],
+                              File["/etc/bind/named.conf"],
 			      Exec["update-zone-conf"]],
 	}
 

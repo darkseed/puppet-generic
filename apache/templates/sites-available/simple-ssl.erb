@@ -8,7 +8,7 @@
   RewriteRule ^(.*)?$ https://<%= domain %>$1 [L,R]
 </VirtualHost>
 
-<VirtualHost <%= ipaddress %>:443>
+<VirtualHost <%= ssl_ipaddress %>:443>
   ServerAdmin	support@kumina.nl
   ServerName	<%= domain %>
 <% if serveralias -%>

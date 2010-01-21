@@ -145,7 +145,7 @@ class apache {
                        $scriptalias = false, $documentroot = "/var/www",
                        $tomcatinstance = "", $proxy_port = "",
                        $djangoproject = "", $djangoprojectpath = "",
-                       $template = "apache/sites-available/simple.erb") {
+                       $ssl_ipaddress = "", $template = "apache/sites-available/simple.erb") {
         $domain = $name
         file { "/etc/apache2/sites-available/$name":
                 ensure => file,

@@ -10,12 +10,19 @@ class postfix {
 		require => Package["postfix"],
 	}
 
-	file { "/etc/postfix/main.cf":
-		owner => "root",
-		group => "root",
-		mode => 644,
-		content => template("postfix/main.cf"),
-		notify => Service["postfix"],
+	file {
+		"/etc/postfix/main.cf":
+			owner => "root",
+			group => "root",
+			mode => 644,
+			content => template("postfix/main.cf"),
+			notify => Service["postfix"];
+		"/var/spool/postfix/dovecot":
+			ensure => directory,
+			owner => "postfix",
+			group => "mail",
+			mode => 755,
+			require => Package["postfix"];
 	}
 
 	exec { "newaliases":

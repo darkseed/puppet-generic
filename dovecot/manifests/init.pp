@@ -30,6 +30,17 @@ class dovecot::common {
 			mode => 600,
 			notify => Service["dovecot"];
 	}
+
+	user {
+		"dovecot-auth":
+			comment => "Dovecot mail server",
+			ensure => present,
+			gid => "nogroup",
+			membership => minimum,
+			shell => "/bin/false",
+			home => "/usr/lib/dovecot",
+			require => Package["dovecot-common"];
+	}
 }
 
 class dovecot::imap inherits dovecot::common {

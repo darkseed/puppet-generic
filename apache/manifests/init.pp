@@ -38,7 +38,7 @@ class apache {
 
            file { "/etc/apache2/vhost-additions/$name/redirect.conf":
                    ensure => $ensure,
-                   content => "RewriteEngine on\nRewriteRule ^/ $forward [R]\n",
+                   content => "RewriteEngine on\nRewriteRule ^/* $forward [R]\n",
            }
    }
 

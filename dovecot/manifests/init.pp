@@ -16,18 +16,21 @@ class dovecot::common {
 			group => "root",
 			source => "puppet://puppet/dovecot/dovecot/dovecot.conf",
 			mode => 644,
+			require => Package["dovecot-common"],
 			notify => Service["dovecot"];
 		"/etc/dovecot/dovecot-ldap.conf":
 			owner => "root",
 			group => "root",
 			source => "puppet://puppet/dovecot/dovecot/dovecot-ldap.conf",
 			mode => 600,
+			require => Package["dovecot-common"],
 			notify => Service["dovecot"];
 		"/etc/dovecot/dovecot-sql.conf":
 			owner => "root",
 			group => "root",
 			source => "puppet://puppet/dovecot/dovecot/dovecot-sql.conf",
 			mode => 600,
+			require => Package["dovecot-common"],
 			notify => Service["dovecot"];
 	}
 

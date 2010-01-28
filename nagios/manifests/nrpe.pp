@@ -25,9 +25,14 @@ class nagios::nrpe {
 		require => Package["nagios-nrpe-server"],
 	}
 
+	package { "openbsd-inetd":
+		ensure => installed,
+	}
+
 	service { "openbsd-inetd":
 		ensure => running,
 		pattern => "/usr/sbin/inetd",
+		require => Package["openbsd-inetd"],
 	}
 
 	exec { "update-services-add-nrpe":

@@ -26,9 +26,10 @@ class apache {
    }
 
    # The next define is for creating virtual hosts that only forward to another site/page
-   define forward_vhost ($ensure = present, $forward) {
+   define forward_vhost ($ensure = present, $forward, $serveralias = false) {
            apache::site_config { $name:
                    template     => "apache/sites-available/simple.erb",
+                   serveralias => $serveralias,
                    documentroot => "/var/www/",
            }
 

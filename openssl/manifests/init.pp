@@ -2,6 +2,13 @@ class openssl::common {
 	package { "openssl":
 		ensure => installed,
 	}
+
+	file {
+		"/etc/ssl/certs":
+			require => Package["openssl"],
+			checksum => "md5",
+			recurse => true;
+	}
 }
 
 class openssl::server {

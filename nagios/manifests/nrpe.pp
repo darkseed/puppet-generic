@@ -120,6 +120,19 @@ class nagios::nrpe::plugins {
 			require => File["/etc/nagios/nrpe.d"];
 	}
 
+	# Various checks
+	check {
+		"libvirtd":
+			command => '/usr/lib/nagios/plugins/check_procs -c 1:1 -C libvirtd',
+			require => File["/etc/nagios/nrpe.d"];
+		"arpwatch":
+			command => '/usr/lib/nagios/plugins/check_procs -c 1:1 -C arpwatch',
+			require => File["/etc/nagios/nrpe.d"];
+		"dhcpd":
+			command => '/usr/lib/nagios/plugins/check_procs -c 1:1 -C dhcpd',
+			require => File["/etc/nagios/nrpe.d"];
+	}
+
 	file { "/usr/local/lib/nagios/plugins/check_drbd":
 		source => "puppet://puppet/nagios/plugins/check_drbd",
 		owner => "root",

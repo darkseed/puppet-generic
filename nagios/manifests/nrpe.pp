@@ -133,7 +133,7 @@ class nagios::nrpe::plugins {
 			require => File["/etc/nagios/nrpe.d"];
 		"remote_ntp":
 			command => '/usr/lib/nagios/plugins/check_ntp_time -H 0.debian.pool.ntp.org',
-			require => File["/etc/nagios/nrpe.d";
+			require => File["/etc/nagios/nrpe.d"];
 		"ntpd":
 			command => '/usr/lib/nagios/plugins/check_procs -c 1: -C ntpd',
 			require => File["/etc/nagios/nrpe.d"];

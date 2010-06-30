@@ -71,8 +71,8 @@ get_image() {
 
 searched=""
 for on_disk in \
-	"/boot/vmlinuz-`uname -r`"\
-	"/boot/vmlinux-`uname -r`"; do
+	"/vmlinuz-`uname -r`"\
+	"/vmlinux-`uname -r`"; do
 
 	if [ -e "$on_disk" ]; then
 		on_disk_version="`get_image "$on_disk" | strings | grep 'Linux version' | head -n1`"
@@ -90,7 +90,6 @@ if ! [ -e "$on_disk" ]; then
 	echo "WARNING: Did not find a kernel image (checked$searched) - I have no idea which kernel I am running"
 	exit $WARNING
 fi
-
 
 running_version="`cat /proc/version`"
 if [ -z "$running_version" ] ; then

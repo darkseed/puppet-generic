@@ -115,6 +115,9 @@ class nagios::nrpe::plugins {
 		"amavis_mta":
 			command => '/usr/lib/nagios/plugins/check_smtp -H 127.0.0.1 -p 10025',
 			require => File["/etc/nagios/nrpe.d"];
+		"local_smtp":
+			command => '/usr/lib/nagios/plugins/check_smtp -H 127.0.0.1',
+			require => File["/etc/nagios/nrpe.d"];
 	}
 
 	file { "/usr/local/lib/nagios/plugins/check_drbd":

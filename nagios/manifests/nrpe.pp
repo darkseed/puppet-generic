@@ -123,13 +123,19 @@ class nagios::nrpe::plugins {
 	# Various checks
 	check {
 		"libvirtd":
-			command => '/usr/lib/nagios/plugins/check_procs -c 1:1 -C libvirtd',
+			command => '/usr/lib/nagios/plugins/check_procs -c 1: -C libvirtd',
 			require => File["/etc/nagios/nrpe.d"];
 		"arpwatch":
-			command => '/usr/lib/nagios/plugins/check_procs -c 1:1 -C arpwatch',
+			command => '/usr/lib/nagios/plugins/check_procs -c 1: -C arpwatch',
 			require => File["/etc/nagios/nrpe.d"];
 		"dhcpd":
-			command => '/usr/lib/nagios/plugins/check_procs -c 1:1 -C dhcpd3',
+			command => '/usr/lib/nagios/plugins/check_procs -c 1: -C dhcpd3',
+			require => File["/etc/nagios/nrpe.d"];
+		"remote_ntp":
+			command => '/usr/lib/nagios/plugins/check_ntp_time -H 0.debian.pool.ntp.org',
+			require => File["/etc/nagios/nrpe.d";
+		"ntpd":
+			command => '/usr/lib/nagios/plugins/check_procs -c 1: -C ntpd',
 			require => File["/etc/nagios/nrpe.d"];
 	}
 

@@ -129,7 +129,7 @@ class nagios::nrpe::plugins {
 			command => '/usr/lib/nagios/plugins/check_procs -c 1:1 -C arpwatch',
 			require => File["/etc/nagios/nrpe.d"];
 		"dhcpd":
-			command => '/usr/lib/nagios/plugins/check_procs -c 1:1 -C dhcpd',
+			command => '/usr/lib/nagios/plugins/check_procs -c 1:1 -C dhcpd3',
 			require => File["/etc/nagios/nrpe.d"];
 	}
 

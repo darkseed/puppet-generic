@@ -71,8 +71,8 @@ get_image() {
 
 searched=""
 for on_disk in \
-	"/vmlinuz-`uname -r`"\
-	"/vmlinux-`uname -r`"; do
+	"/vmlinuz"\
+	"/vmlinux"; do
 
 	if [ -e "$on_disk" ]; then
 		on_disk_version="`get_image "$on_disk" | strings | grep 'Linux version' | head -n1`"

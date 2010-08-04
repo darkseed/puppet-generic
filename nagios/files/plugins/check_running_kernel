@@ -69,8 +69,11 @@ get_image() {
 	exit 1
 }
 
+# Probe if we're running a Xen-enabled kernel.
+UNAME_XEN=`uname -r | egrep 'xen' || echo "non-existent-file-on-purpose"`
+
 searched=""
-for on_disk in "/vmlinuz" "/vmlinux" "/boot/vmlinuz-`uname -r`" "/boot/vmlinux-`uname -r`"; do
+for on_disk in "/boot/vmlinuz-${UNAME_XEN}" "/boot/vmlinux-${UNAME_XEN}" "/vmlinuz" "/vmlinux"; do
 
 	if [ -e "$on_disk" ]; then
 		on_disk_version="`get_image "$on_disk" | strings | grep 'Linux version' | head -n1`"

@@ -225,7 +225,7 @@ class nagios::nrpe::plugins {
 
 	# Check service status using /etc/init.d scripts.
 	check { "status_init":
-		command => "sudo /usr/local/lib/nagios/plugins/check_proc_status.sh $ARG1$",
+		command => "sudo /usr/local/lib/nagios/plugins/check_proc_status.sh \$ARG1\$",
 		require => File["/usr/local/lib/nagios/plugins/check_proc_status.sh"],
 	}
 

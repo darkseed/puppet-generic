@@ -223,6 +223,12 @@ class nagios::nrpe::plugins {
 		require => File["/usr/local/lib/nagios/plugins/check_bonding"],
 	}
 
+	# Check service status using /etc/init.d scripts.
+	check { "status_init":
+		command => "/usr/local/lib/nagios/plugins/check_proc_status.sh",
+		require => File["/usr/local/lib/nagios/plugins/check_proc_status.sh"],
+	}
+
 	# This check is so we have a dependency for the backup machine. It checks if
 	# there are processes called 'rdiff-backup', which would indicate an ongoing
 	# backup. The CPU and Load checks depend on this check, so they won't fire
@@ -233,6 +239,14 @@ class nagios::nrpe::plugins {
 
 	file { "/usr/local/lib/nagios/plugins/check_bonding":
 		source => "puppet://puppet/nagios/plugins/check_bonding",
+		owner => "root",
+		group => "staff",
+		mode => 755,
+		require => File["/usr/local/lib/nagios/plugins"];
+	}
+
+	file { "/usr/local/lib/nagios/plugins/check_proc_status.sh":
+		source => "puppet://puppet/nagios/plugins/check_proc_status.sh",
 		owner => "root",
 		group => "staff",
 		mode => 755,

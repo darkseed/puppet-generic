@@ -33,7 +33,7 @@ class openssl::ca {
 			group => "root",
 			require => Package["openssl"];
 		"/etc/ssl/Makefile":
-			source => "puppet://puppet/openssl/Makefile",
+			source => "puppet:///modules/openssl/Makefile",
 			mode => 644,
 			owner => "root",
 			group => "root",

@@ -15,7 +15,7 @@ class ksplice {
 	exec { "import ksplice repository key":
 		command => "/usr/bin/wget -qq -O - 'https://www.ksplice.com/apt/ksplice-archive.asc' | /usr/bin/apt-key add -",
 		unless  => "/usr/bin/apt-key list | grep -q 'Ksplice APT Repository Signing Key'",
-		require => Package["wget"],
+		require => [Package["wget"],Apt::Source["ksplice"]],
 		notify  => Exec["/usr/bin/apt-get update"],
 	}
 

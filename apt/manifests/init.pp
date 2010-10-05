@@ -16,7 +16,7 @@ class apt {
 				err("unknown ensure value ${ensure}")
 			}
 			present: {
-				exec { "/usr/bin/wget -qq -O - 'http://pgp.surfnet.nl:11371/pks/lookup?op=get&search=0x$name' | /usr/bin/apt-key add -":
+				exec { "/usr/bin/wget -qq -O - 'http://keys.gnupg.net:11371/pks/lookup?op=get&search=0x$name' | /usr/bin/apt-key add -":
 					unless => "/usr/bin/apt-key list | grep -q $name",
 					require => Package["wget"],
 					notify => Exec["/usr/bin/apt-get update"];

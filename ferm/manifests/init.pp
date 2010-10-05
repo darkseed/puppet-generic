@@ -13,9 +13,10 @@ class ferm {
 
 	file {
 		"/etc/ferm/ferm.conf":
-			mode => 644,
-			owner => "root",
-			group => "adm",
+			ensure  => file,
+			mode    => 644,
+			owner   => "root",
+			group   => "adm",
 			require => Package["ferm"];
 	}
 }

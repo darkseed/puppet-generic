@@ -1,0 +1,47 @@
+<VirtualHost <%= address %>>
+  ServerAdmin	support@kumina.nl
+  ServerName	<%= domain %>
+<% if serveralias -%>
+  ServerAlias	<%= serveralias.to_a.join(" ") %>
+<% end -%>
+<% if scriptalias -%>
+  ScriptAlias   /cgi-bin <%= scriptalias %>
+  <Directory "<%= scriptalias %>">
+    AllowOverride None
+    Options ExecCGI
+    Order allow,deny
+    Allow from all
+  </Directory>
+<% end -%>
+
+  CustomLog	/var/log/apache2/<%= domain %>-access.log combined-resptime
+  ErrorLog	/var/log/apache2/<%= domain %>-error.log
+  DocumentRoot	<%= documentroot %>
+  Include	/etc/apache2/vhost-additions/<%= domain %>/
+</VirtualHost>
+
+<VirtualHost <%= ssl_ipaddress %>:443>
+  ServerAdmin	support@kumina.nl
+  ServerName	<%= domain %>
+<% if serveralias -%>
+  ServerAlias	<%= serveralias.to_a.join(" ") %>
+<% end -%>
+<% if scriptalias -%>
+  ScriptAlias   /cgi-bin <%= scriptalias %>
+  <Directory "<%= scriptalias %>">
+    AllowOverride None
+    Options ExecCGI
+    Order allow,deny
+    Allow from all
+  </Directory>
+<% end -%>
+
+  SSLEngine On
+  SSLCertificateFile /etc/apache2/ssl/<%= domain %>.pem
+  SSLCertificateKeyFile /etc/apache2/ssl/<%= domain %>.key
+
+  CustomLog	/var/log/apache2/<%= domain %>.ssl-access.log combined-resptime
+  ErrorLog	/var/log/apache2/<%= domain %>.ssl-error.log
+  DocumentRoot	<%= documentroot %>
+  Include	/etc/apache2/vhost-additions/<%= domain %>/
+</VirtualHost>

@@ -39,6 +39,7 @@ class dovecot::common {
 			comment => "Dovecot mail server",
 			ensure => present,
 			gid => "nogroup",
+			uid => 200,
 			membership => minimum,
 			shell => "/bin/false",
 			home => "/usr/lib/dovecot",

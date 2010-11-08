@@ -74,6 +74,16 @@ class munin::client {
 		group => "staff",
 		mode => 755,
 	}
+
+	# Configs needed for JMX monitoring. Not needed everywhere, but roll out
+	# nontheless.
+	file { "/usr/local/etc/munin/plugins":
+		recurse => true,
+		source  => "puppet:///modules/munin/client/configs",
+		owner   => "root",
+		group   => "staff",
+		mode    => 755;
+	}
 }
 
 class munin::server {

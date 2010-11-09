@@ -4,8 +4,8 @@ Puppet::Type.type(:mysql_user).provide(:debian,
 		:parent => Puppet::Provider::Package) do
 
 	desc "Use mysql as database."
-	commands :mysql => '/usr/bin/mysql --defaults-file=/etc/mysql/debian.cnf'
-	commands :mysqladmin => '/usr/bin/mysqladmin --defaults-file=/etc/mysql/debian.cnf'
+	optional_commands :mysql => '/usr/bin/mysql --defaults-file=/etc/mysql/debian.cnf'
+	optional_commands :mysqladmin => '/usr/bin/mysqladmin --defaults-file=/etc/mysql/debian.cnf'
 
 	defaultfor :operatingsystem => :debian
 
@@ -22,12 +22,17 @@ Puppet::Type.type(:mysql_user).provide(:debian,
 		users = []
 
 		cmd = "#{command(:mysql)} mysql -NBe 'select concat(user, \"@\", host), password from user'"
-		execpipe(cmd) do |process|
-			process.each { |line|
-				users << new(query_line_to_hash(line))
-			}
+		begin
+			execpipe(cmd) do |process|
+				process.each { |line|
+					users << new(query_line_to_hash(line))
+				}
+			end
+		rescue
+			return users
+		else
+			return users
 		end
-		return users
 	end
 
 	def mysql_flush 

@@ -7,8 +7,8 @@ Puppet::Type.type(:mysql_database).provide(:debian,
 
 	defaultfor :operatingsystem => :debian
 
-	commands :mysqladmin => '/usr/bin/mysqladmin --defaults-file=/etc/mysql/debian.cnf'
-	commands :mysql => '/usr/bin/mysql --defaults-file=/etc/mysql/debian.cnf'
+	optional_commands :mysqladmin => '/usr/bin/mysqladmin --defaults-file=/etc/mysql/debian.cnf'
+	optional_commands :mysql => '/usr/bin/mysql --defaults-file=/etc/mysql/debian.cnf'
 
 	def query
 		result = {
@@ -31,16 +31,21 @@ Puppet::Type.type(:mysql_database).provide(:debian,
 		databases = []
 
 		cmd = "#{command(:mysql)} mysql -NBe 'show databases'"
-		execpipe(cmd) do |process|
-			process.each { |line|
-				hash = {}
-				hash[:name] = line.chomp
-				hash[:provider] = self.name
-				databases << new(hash)
-				Puppet.debug(hash[:name])
-			}
+		begin
+			execpipe(cmd) do |process|
+				process.each { |line|
+					hash = {}
+					hash[:name] = line.chomp
+					hash[:provider] = self.name
+					databases << new(hash)
+					Puppet.debug(hash[:name])
+				}
+			end
+		rescue
+			return databases
+		else
+			return databases
 		end
-		return databases
 	end
 
 	def create

@@ -11,8 +11,8 @@ Puppet::Type.type(:mysql_grant).provide(:debian) do
 
 	defaultfor :operatingsystem => :debian
 
-	commands :mysql => '/usr/bin/mysql --defaults-file=/etc/mysql/debian.cnf'
-	commands :mysqladmin => '/usr/bin/mysqladmin --defaults-file=/etc/mysql/debian.cnf'
+	optional_commands :mysql => '/usr/bin/mysql --defaults-file=/etc/mysql/debian.cnf'
+	optional_commands :mysqladmin => '/usr/bin/mysqladmin --defaults-file=/etc/mysql/debian.cnf'
 
 	unless defined?(MYSQL_USER_PRIVS)
 		MYSQL_USER_PRIVS = [ :select_priv, :insert_priv, :update_priv, :delete_priv,

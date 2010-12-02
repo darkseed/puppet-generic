@@ -34,7 +34,7 @@
   Include	/etc/apache2/vhost-additions/<%= domain %>/
 </VirtualHost>
 
-<VirtualHost <%= ssl_ip6address %>:443>
+<VirtualHost [<%= ssl_ip6address %>]:443>
   ServerAdmin	support@kumina.nl
   ServerName	<%= domain %>
 <% if serveralias -%>

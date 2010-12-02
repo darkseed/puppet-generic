@@ -24,6 +24,16 @@
   </Directory>
 <% end -%>
 
+  SSLEngine On
+  SSLCertificateFile /etc/apache2/ssl/<%= domain %>.pem
+  SSLCertificateKeyFile /etc/apache2/ssl/<%= domain %>.key
+
+  CustomLog	/var/log/apache2/<%= domain %>-access.log combined
+  ErrorLog	/var/log/apache2/<%= domain %>-error.log
+  DocumentRoot	<%= documentroot %>
+  Include	/etc/apache2/vhost-additions/<%= domain %>/
+</VirtualHost>
+
 <VirtualHost <%= ssl_ip6address %>:443>
   ServerAdmin	support@kumina.nl
   ServerName	<%= domain %>

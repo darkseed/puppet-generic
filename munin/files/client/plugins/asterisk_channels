@@ -1,0 +1,54 @@
+#!/usr/bin/perl -w
+#
+# Copyright (C) 2005-2008 Rodolphe Quiedeville <rodolphe@quiedeville.org>
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; version 2 dated June,
+# 1991.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+# Add the following lines to MUNINDIR/plugin-conf.d/munin-node
+# [asterisk_*]
+# user root
+#
+#%# family=asterisk
+
+use strict;
+
+if ($ARGV[0] and $ARGV[0] eq "config")
+{
+    print "graph_title Asterisk active channels\n";
+    print "graph_args --base 1000 -l 0\n";
+    print "graph_vlabel channels\n";
+    print "graph_category asterisk\n";
+    print "channels.draw AREA\n";
+    print "channels.label channels\n";
+    print "calls.draw LINE1\n";
+    print "calls.label calls\n";
+    exit 0;
+}
+
+open(LINE, 'asterisk -rx "show channels"|');
+
+my ($chans, $calls, $line)=(0,0,undef);
+
+while ($line = <LINE>)
+{
+    $chans = $1 if ($line =~ /^(\d+) active channel/);
+    $calls = $1 if ($line =~ /^(\d+) active call/);
+}
+
+close(LINE);
+
+printf "channels.value %d\n",$chans;
+printf "calls.value %d\n",$calls;
+

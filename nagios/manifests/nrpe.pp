@@ -202,6 +202,20 @@ class nagios::nrpe::plugins {
 		require => File["/usr/local/lib/nagios/plugins"];
 	}
 
+	# Check Adaptec RAID arrays.
+	check {
+		"adaptec":
+			command => "sudo /usr/local/lib/nagios/plugins/check_adaptec",
+	}
+
+	file { "/usr/local/lib/nagios/plugins/check_adaptec":
+		source => "puppet://puppet/nagios/plugins/check_adaptec",
+		owner => "root",
+		group => "staff",
+		mode => 755,
+		require => File["/usr/local/lib/nagios/plugins"];
+	}
+
 	# Make sure the latest installed kernel is also the running kernel.
 	# (To reminds us to reboot a server after a kernel upgrade.)
 	check { "running_kernel":

@@ -8,6 +8,7 @@ class nagios::nrpe {
                         mode => 644,
                         content => "command[check_$name]=$command\n",
                         require => File["/etc/nagios/nrpe.d"],
+			notify => Service["nagios-nrpe-server"],
                 }
         }
 

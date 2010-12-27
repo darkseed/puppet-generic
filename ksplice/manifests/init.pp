@@ -35,6 +35,11 @@ class ksplice {
 		notify       => Exec["initial uptrack run"],
 	}
 
+	# Install the ksplice additional apps (includes nagios plugins)
+	package { "python-ksplice-uptrack":
+		ensure => installed,
+	}
+
 	# Run the script when it's first installed
 	exec { "initial uptrack run":
 		command => "/usr/sbin/uptrack-upgrade -y",
@@ -48,5 +53,11 @@ class ksplice {
 		group   => "root",
 		mode    => 644,
 		require => Package["uptrack"],
+	}
+
+	# Add nrpe check
+	nagios::nrpe::check { "check_ksplice":
+		command => "/usr/lib/nagios/plugins/check_uptrack_local -w i -c o",
+		require => Package["python-ksplice-uptrack"],
 	}
 }

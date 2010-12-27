@@ -56,8 +56,19 @@ class ksplice {
 	}
 
 	# Add nrpe check
-	nagios::nrpe::check { "check_ksplice":
+	nagios::nrpe::check { "ksplice":
 		command => "/usr/lib/nagios/plugins/check_uptrack_local -w i -c o",
 		require => Package["python-ksplice-uptrack"],
+	}
+
+	# Set directory permissions so Nagios can read status
+	file { "/var/cache/uptrack":
+		mode    => 755,
+		require => Package["uptrack"],
+	}
+
+	# Remove incorrect file (can be removed after dec 28 2010)
+	file { ["/etc/nagios/nrpe.d/check_ksplice.cfg","/etc/nagios/nrpe.d/check-ksplice.cfg"]:
+		ensure => absent,
 	}
 }

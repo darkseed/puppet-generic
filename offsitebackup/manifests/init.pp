@@ -65,7 +65,7 @@ class offsitebackup::common {
 }
 
 class offsitebackup::client {
-	package { "offsite-backup":
+	package { ["offsite-backup","backup-scripts"]:
 		ensure => latest,
 	}
 

@@ -29,4 +29,16 @@ class postfix {
 		refreshonly => true,
 		path => "/usr/bin",
 	}
+
+	# Munin plugins
+	file {
+		"/etc/munin/plugins/postfix_mailqueue":
+			ensure => link,
+			target => "/usr/share/munin/plugins/postfix_mailqueue",
+			notify => Service["munin-node"];
+		"/etc/munin/plugins/postfix_mailvolume":
+			ensure => link,
+			target => "/usr/share/munin/plugins/postfix_mailvolume",
+			notify => Service["munin-node"];
+	}
 }

@@ -1,0 +1,194 @@
+#!/bin/sh
+#
+#
+#	Hetznet Failover IP. Allows the control of the failover IP
+#	via the HTTP API.
+#
+# Copyright (c) 2004 SUSE LINUX AG, Lars Marowsky-Brée
+#                    All Rights Reserved.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of version 2 of the GNU General Public License as
+# published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it would be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#
+# Further, this software is distributed without any warranty that it is
+# free of the rightful claim of any third person regarding infringement
+# or the like.  Any license provided herein, whether implied or
+# otherwise, applies only to this software file.  Patent licenses, if
+# any, provided herein do not apply to combinations of this program with
+# other software, or any other product whatsoever.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write the Free Software Foundation,
+# Inc., 59 Temple Place - Suite 330, Boston MA 02111-1307, USA.
+#
+
+# Uses the following variables:
+#  OCF_RESKEY_ip
+#  OCF_RESKEY_script
+#
+
+#######################################################################
+# Initialization:
+
+. ${OCF_ROOT}/resource.d/heartbeat/.ocf-shellfuncs
+
+#######################################################################
+
+meta_data() {
+	cat <<END
+<?xml version="1.0"?>
+<!DOCTYPE resource-agent SYSTEM "ra-api-1.dtd">
+<resource-agent name="Hetzner-failover-ip" version="0.9">
+<version>1.0</version>
+
+<longdesc lang="en">
+To be described.
+</longdesc>
+<shortdesc lang="en">Hetzner failover IP agent</shortdesc>
+
+<parameters>
+<parameter name="state" unique="1">
+<longdesc lang="en">
+Location to store the resource state in.
+</longdesc>
+<shortdesc lang="en">State file</shortdesc>
+<content type="string" default="${HA_VARRUN}/Hetzner-foip-{OCF_RESOURCE_INSTANCE}.state" />
+</parameter>
+
+<parameter name="ip" unique="1" required="1">
+<longdesc lang="en">
+The actual failover IP address.
+</longdesc>
+<shortdesc lang="en">The actual failover IP address.</shortdesc>
+<content type="string" default="" />
+</parameter>
+
+<parameter name="script" unique="1">
+<longdesc lang="en">
+The Python script that actually handles the work.
+</longdesc>
+<shortdesc lang="en">Python script that does the work.</shortdesc>
+<content type="string" default="/usr/local/sbin/parse-hetzner-json.py" />
+</parameter>
+
+</parameters>
+
+<actions>
+<action name="start"        timeout="300" />
+<action name="stop"         timeout="10" />
+<action name="monitor"      timeout="30" interval="60" depth="0" start-delay="0" />
+<action name="reload"       timeout="600" />
+<action name="meta-data"    timeout="5" />
+<action name="validate-all" timeout="30" />
+</actions>
+</resource-agent>
+END
+}
+
+#######################################################################
+
+hetzner_foip_usage() {
+	cat <<END
+usage: $0 {start|stop|monitor|migrate_to|migrate_from|validate-all|meta-data}
+
+Expects to have a fully populated OCF RA-compliant environment set.
+END
+}
+
+hetzner_foip_start() {
+    hetzner_foip_monitor
+    if [ $? =  $OCF_SUCCESS ]; then
+	return $OCF_SUCCESS
+    fi
+    $OCF_RESKEY_script -s -i $OCF_RESKEY_ip
+    touch ${OCF_RESKEY_state}
+    return $OCF_SUCCESS
+}
+
+hetzner_foip_stop() {
+    if [ -f ${OCF_RESKEY_state} ]; then
+	rm ${OCF_RESKEY_state}
+    fi
+    return $OCF_SUCCESS
+}
+
+hetzner_foip_monitor() {
+	# Monitor _MUST!_ differentiate correctly between running
+	# (SUCCESS), failed (ERROR) or _cleanly_ stopped (NOT RUNNING).
+	# That is THREE states, not just yes/no.
+	
+	if [ -f ${OCF_RESKEY_state} ]; then
+	    ${OCF_RESKEY_script} -g -i ${OCF_RESKEY_ip}
+	    if [ $? -eq 0 ]; then
+	        return $OCF_SUCCESS
+	    fi
+	    return $OCF_ERR_GENERIC
+	fi
+	return $OCF_NOT_RUNNING
+}
+
+hetzner_foip_validate() {
+    
+    # Is the state directory writable? 
+    state_dir=`dirname "$OCF_RESKEY_state"`
+    touch "$state_dir/$$"
+    if [ $? != 0 ]; then
+	return $OCF_ERR_ARGS
+    fi
+    rm "$state_dir/$$"
+    
+    # Does the script exist and is it executable?
+    if [ ! -x $OCF_RESKEY_script ]; then
+        return $OCF_ERR_ARGS
+    fi
+
+    # Is the IP address a failover address we can use?
+    $OCF_RESKEY_script -l -i $OCF_RESKEY_ip
+    if [ $? -gt 0 ]; then
+        return $OCF_ERR_ARGS
+    fi
+
+    return $OCF_SUCCESS
+}
+
+: ${OCF_RESKEY_CRM_meta_interval=0}
+: ${OCF_RESKEY_CRM_meta_globally_unique:="true"}
+
+if [ "x$OCF_RESKEY_state" = "x" ]; then
+    if [ ${OCF_RESKEY_CRM_meta_globally_unique} = "false" ]; then
+	state="${HA_VARRUN}/Hetzner-foip-${OCF_RESOURCE_INSTANCE}.state"
+	
+	# Strip off the trailing clone marker
+	OCF_RESKEY_state=`echo $state | sed s/:[0-9][0-9]*\.state/.state/`
+    else 
+	OCF_RESKEY_state="${HA_VARRUN}/Hetzner-foip-${OCF_RESOURCE_INSTANCE}.state"
+    fi
+fi
+
+case $__OCF_ACTION in
+meta-data)	meta_data
+		exit $OCF_SUCCESS
+		;;
+start)		hetzner_foip_start;;
+stop)		hetzner_foip_stop;;
+monitor)	hetzner_foip_monitor;;
+reload)		ocf_log err "Reloading..."
+	        hetzner_foip_start
+		;;
+validate-all)	hetzner_foip_validate;;
+usage|help)	hetzner_foip_usage
+		exit $OCF_SUCCESS
+		;;
+*)		hetzner_foip_usage
+		exit $OCF_ERR_UNIMPLEMENTED
+		;;
+esac
+rc=$?
+ocf_log debug "${OCF_RESOURCE_INSTANCE} $__OCF_ACTION : $rc"
+exit $rc
+

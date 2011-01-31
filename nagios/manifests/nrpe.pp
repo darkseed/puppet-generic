@@ -108,6 +108,12 @@ class nagios::nrpe::plugins {
 			require => File["/usr/local/lib/nagios/plugins/check_drbd"];
 	}
 
+	# Check Pacemaker status
+	check {
+		"pacemaker":
+			command => '/usr/bin/sudo /usr/sbin/crm_mon -s';
+	}
+
 	# aMaVis checks
 	check {
 		"amavis_scanner":

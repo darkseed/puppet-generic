@@ -1,12 +1,13 @@
 class apt {
 	define source($sourcetype="deb", $uri, $distribution="stable", $components=[], $comment="", $ensure="file") {
 		file { "/etc/apt/sources.list.d/$name.list":
-			ensure => $ensure,
-			owner => "root",
-			group => "root",
-			mode => 644,
+			ensure  => $ensure,
+			owner   => "root",
+			group   => "root",
+			mode    => 644,
 			content => template("apt/source.list"),
 			require => File["/etc/apt/sources.list.d"],
+			notify  => Exec["/usr/bin/apt-get update"],
 		}
 	}
 

@@ -1,5 +1,10 @@
-class mysql::common {
-	package { "mysql-server-5.0":
+class mysql::server {
+	case $lsbdistcodename {
+		"lenny":   { $mysqlserver = "mysql-server-5.0" }
+		"squeeze": { $mysqlserver = "mysql-server-5.1" }
+	}
+
+	package { "$mysqlserver":
 		ensure => installed,
 	}
 
@@ -7,10 +12,6 @@ class mysql::common {
 		hasrestart => true,
 		hasstatus => true,
 	}
-}
-
-class mysql::server {
-	include mysql::common
 
 	file { "/etc/mysql/my.cnf":
 		content => template("mysql/my.cnf"),
@@ -24,7 +25,7 @@ class mysql::server {
 		mode => 750,
 		owner => "root",
 		group => "root",
-		require => Package["mysql-server-5.0"],
+		require => Package["$mysqlserver"],
 	}
 
 	if ($mysql_serverid) {
@@ -70,7 +71,7 @@ class mysql::slave inherits mysql::server {
 		owner => "root",
 		group => "root",
 		mode => 755,
-		require => Package["mysql-server-5.0"];
+		require => Package["$mysqlserver"];
 	}
 }
 

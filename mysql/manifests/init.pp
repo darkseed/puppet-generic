@@ -54,6 +54,14 @@ class mysql::server {
 		content => template("mysql/binary-logging.cnf"),
 		notify => Service["mysql"],
 	}
+
+        file { "/etc/mysql/conf.d/file-per-table.cnf":
+                mode    => 644,
+                owner   => "root",
+                group   => "root",
+                content => "[mysqld]\ninnodb_file_per_table\n",
+                notify  => Service["mysql"],
+        }
 }
 
 class mysql::slave inherits mysql::server {

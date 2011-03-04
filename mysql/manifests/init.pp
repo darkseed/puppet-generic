@@ -120,3 +120,7 @@ class mysql::slave::delayed inherits mysql::slave {
 		ensure => installed,
 	}
 }
+
+class mysql::munin {
+	munin::client::plugin { ["mysql_bytes","mysql_innodb","mysql_queries","mysql_slowqueries","mysql_threads"]:; }
+}

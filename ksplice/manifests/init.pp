@@ -7,7 +7,7 @@ class ksplice {
 	# Add the source repo
 	apt::source { "ksplice":
 		uri          => "http://www.ksplice.com/apt",
-		distribution => "lenny",
+		distribution => "${lsbdistcodename}",
 		components   => ["ksplice"],
 	}
 
@@ -15,7 +15,7 @@ class ksplice {
 	exec { "import ksplice repository key":
 		command => "/usr/bin/wget -qq -O - 'https://www.ksplice.com/apt/ksplice-archive.asc' | /usr/bin/apt-key add -",
 		unless  => "/usr/bin/apt-key list | grep -q 'Ksplice APT Repository Signing Key'",
-		require => [Package["wget"],Apt::Source["ksplice"]],
+		require => [Package["wget","ca-certificates"],Apt::Source["ksplice"]],
 		notify  => Exec["/usr/bin/apt-get update"],
 	}
 
@@ -42,8 +42,9 @@ class ksplice {
 
 	# Run the script when it's first installed
 	exec { "initial uptrack run":
-		command => "/usr/sbin/uptrack-upgrade -y",
+		command     => "/usr/sbin/uptrack-upgrade -y",
 		refreshonly => true,
+		require     => File["/etc/uptrack/uptrack.conf"],
 	}
 
 	# The modified configuration file

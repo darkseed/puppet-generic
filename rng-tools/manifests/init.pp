@@ -1,5 +1,5 @@
 class rng-tools {
-	package { ["rng-tools","reseed"]:
+	package { "rng-tools":
 		ensure => installed,
 	}
 

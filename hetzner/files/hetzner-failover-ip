@@ -79,12 +79,12 @@ The Python script that actually handles the work.
 </parameters>
 
 <actions>
-<action name="start"        timeout="300" />
-<action name="stop"         timeout="10" />
-<action name="monitor"      timeout="30" interval="60" depth="0" start-delay="0" />
-<action name="reload"       timeout="600" />
-<action name="meta-data"    timeout="5" />
-<action name="validate-all" timeout="30" />
+<action name="start"        timeout="300s" />
+<action name="stop"         timeout="10s" />
+<action name="monitor"      timeout="30s" interval="60s" depth="0" start-delay="0s" />
+<action name="reload"       timeout="600s" />
+<action name="meta-data"    timeout="5s" />
+<action name="validate-all" timeout="30s" />
 </actions>
 </resource-agent>
 END
@@ -101,46 +101,30 @@ END
 }
 
 hetzner_foip_start() {
-    hetzner_foip_monitor
-    if [ $? =  $OCF_SUCCESS ]; then
-	return $OCF_SUCCESS
-    fi
     $OCF_RESKEY_script -s -i $OCF_RESKEY_ip
-    touch ${OCF_RESKEY_state}
     return $OCF_SUCCESS
 }
 
 hetzner_foip_stop() {
-    if [ -f ${OCF_RESKEY_state} ]; then
-	rm ${OCF_RESKEY_state}
-    fi
     return $OCF_SUCCESS
 }
 
 hetzner_foip_monitor() {
-	# Monitor _MUST!_ differentiate correctly between running
-	# (SUCCESS), failed (ERROR) or _cleanly_ stopped (NOT RUNNING).
-	# That is THREE states, not just yes/no.
 	
-	if [ -f ${OCF_RESKEY_state} ]; then
-	    ${OCF_RESKEY_script} -g -i ${OCF_RESKEY_ip}
-	    if [ $? -eq 0 ]; then
-	        return $OCF_SUCCESS
-	    fi
-	    return $OCF_ERR_GENERIC
-	fi
-	return $OCF_NOT_RUNNING
+	${OCF_RESKEY_script} -g -i ${OCF_RESKEY_ip}
+	case $? in
+	0)
+		return $OCF_SUCCESS ;;
+	2)
+		return $OCF_NOT_RUNNING ;;
+	*)
+		sleep 30 # Do not DOS Hetzner
+		return $OCF_ERR_GENERIC ;;
+	esac
+	
 }
 
 hetzner_foip_validate() {
-    
-    # Is the state directory writable? 
-    state_dir=`dirname "$OCF_RESKEY_state"`
-    touch "$state_dir/$$"
-    if [ $? != 0 ]; then
-	return $OCF_ERR_ARGS
-    fi
-    rm "$state_dir/$$"
     
     # Does the script exist and is it executable?
     if [ ! -x $OCF_RESKEY_script ]; then
@@ -158,17 +142,6 @@ hetzner_foip_validate() {
 
 : ${OCF_RESKEY_CRM_meta_interval=0}
 : ${OCF_RESKEY_CRM_meta_globally_unique:="true"}
-
-if [ "x$OCF_RESKEY_state" = "x" ]; then
-    if [ ${OCF_RESKEY_CRM_meta_globally_unique} = "false" ]; then
-	state="${HA_VARRUN}/Hetzner-foip-${OCF_RESOURCE_INSTANCE}.state"
-	
-	# Strip off the trailing clone marker
-	OCF_RESKEY_state=`echo $state | sed s/:[0-9][0-9]*\.state/.state/`
-    else 
-	OCF_RESKEY_state="${HA_VARRUN}/Hetzner-foip-${OCF_RESOURCE_INSTANCE}.state"
-    fi
-fi
 
 case $__OCF_ACTION in
 meta-data)	meta_data

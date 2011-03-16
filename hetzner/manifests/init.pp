@@ -3,6 +3,9 @@
 # Alike 3.0 Unported license - http://creativecommons.org/licenses/by-sa/3.0/
 # See LICENSE for the full legal text.
 
+class hetzner {
+}
+
 class hetzner::failover_ip {
 	package { "python-simplejson":
 		ensure => latest,

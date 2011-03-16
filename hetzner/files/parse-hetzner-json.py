@@ -22,6 +22,10 @@ parser.add_option("-c", "--config",
 
 (options, args) = parser.parse_args()
 
+exit_ok=0
+exit_error=2
+exit_unknown=1
+
 # Parse the configfile
 config = ConfigParser.SafeConfigParser()
 config.read(options.configfile)
@@ -37,8 +41,14 @@ auth_handler = urllib2.HTTPBasicAuthHandler(pass_handler)
 opener = urllib2.build_opener(auth_handler)
 urllib2.install_opener(opener)
 
+
+
 def list_failover_ips():
-	value = urllib2.urlopen("https://robot-ws.your-server.de/failover")
+	try:
+		value = urllib2.urlopen("https://robot-ws.your-server.de/failover")
+	except urllib2.HTTPError, e:
+		print "HTTP Error code %s, cannot get list of ip's" % (e.code)
+		sys.exit(exit_unknown)
 	# Make from the json a python object
 	data = json.load(value)
 	# Get the ips
@@ -49,7 +59,11 @@ def list_failover_ips():
 
 def get_failover_ip(ip):
 	url = "https://robot-ws.your-server.de/failover/"+ip
-	value = urllib2.urlopen(url)
+	try:
+		value = urllib2.urlopen(url)
+	except urllib2.HTTPError, e:
+		print "%s gives HTTP Error code %s, I don't know who has the failover IP %s" % (url,e.code,ip)
+		sys.exit(exit_unknown)
 	data = json.load(value)
 	return data["failover"]["active_server_ip"]
 
@@ -65,11 +79,11 @@ if options.list_action:
 	if options.failover_ip == "0":
 		for x in list_failover_ips():
 			print x
-		sys.exit(0)
+		sys.exit(exit_ok)
 	else:
 		if options.failover_ip in list_failover_ips():
-			sys.exit(0)
-	sys.exit(1)
+			sys.exit(exit_ok)
+	sys.exit(exit_error)
 
 elif options.get_action:
 	# Check if the option is set
@@ -83,10 +97,10 @@ elif options.get_action:
 	# Does the ip point to us?
 	if config.get(section, "local_ip") == active_ip:
 		print "Assigned to us."
-		sys.exit(0)
+		sys.exit(exit_ok)
 	else:
 		print "Not assigned to us, but to %s." % (active_ip)
-		sys.exit(1)
+		sys.exit(exit_error)
 
 elif options.set_action:
 	# Check if the option is set
@@ -97,7 +111,7 @@ elif options.set_action:
 		raise ValueError, "This failover IP is not assigned to the user in the config file."
 	if get_failover_ip(options.failover_ip) == config.get(section,"local_ip"):
 		print "Already set."
-		sys.exit(0)
+		sys.exit(exit_ok)
 	set_failover_ip(options.failover_ip)
 	print "Set."
-	sys.exit(0)
+	sys.exit(exit_ok)

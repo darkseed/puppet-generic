@@ -1,16 +1,16 @@
 class nagios::nrpe {
 	include nagios::nrpe::plugins
 
-        define check($command) {
-                file { "/etc/nagios/nrpe.d/$name.cfg":
-                        owner => "root",
-                        group => "root",
-                        mode => 644,
-                        content => "command[check_$name]=$command\n",
-                        require => File["/etc/nagios/nrpe.d"],
+	define check($command) {
+		file { "/etc/nagios/nrpe.d/$name.cfg":
+			owner => "root",
+			group => "root",
+			mode => 644,
+			content => "command[check_$name]=$command\n",
+			require => File["/etc/nagios/nrpe.d"],
 			notify => Service["nagios-nrpe-server"],
-                }
-        }
+		}
+	}
 
 	package { "nagios-nrpe-server":
 		ensure => installed,
@@ -135,15 +135,40 @@ class nagios::nrpe::plugins {
 		"arpwatch":
 			command => '/usr/lib/nagios/plugins/check_procs -c 1: -C arpwatch',
 			require => File["/etc/nagios/nrpe.d"];
-		"dhcpd":
-			command => '/usr/lib/nagios/plugins/check_procs -c 1: -C dhcpd3',
-			require => File["/etc/nagios/nrpe.d"];
 		"remote_ntp":
 			command => '/usr/lib/nagios/plugins/check_ntp_time -H 0.debian.pool.ntp.org',
 			require => File["/etc/nagios/nrpe.d"];
 		"ntpd":
 			command => '/usr/lib/nagios/plugins/check_procs -c 1: -C ntpd',
 			require => File["/etc/nagios/nrpe.d"];
+	}
+
+	if versioncmp($lsbdistrelease, "6.0") >= 0 { #squeeze or later
+		check{
+			"dhcpd":
+				command => '/usr/lib/nagios/plugins/check_procs -c 1: -C dhcpd',
+				require => File["/etc/nagios/nrpe.d"];
+		}
+	}
+	
+	if versioncmp($lsbdistrelease, "6.0") <  0 { # before squeeze
+		check{
+			"dhcpd":
+				command => '/usr/lib/nagios/plugins/check_procs -c 1: -C dhcpd3',
+				require => File["/etc/nagios/nrpe.d"];
+		}
+	}
+
+
+	# SSL certificates
+	check {
+		"sslcert":
+			command => 'sudo /usr/lib/nagios/plugins/check_sslcert -c 7 -w 30 $ARG1$',
+			require => [File["/etc/nagios/nrpe.d"], Package["nagios-plugins-kumina"]];
+	}
+
+	package { "nagios-plugins-kumina":
+		ensure => latest,
 	}
 
 	file { "/usr/local/lib/nagios/plugins/check_drbd":

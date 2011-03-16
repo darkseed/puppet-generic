@@ -1,0 +1,102 @@
+#!/bin/sh
+
+. ${OCF_ROOT}/resource.d/heartbeat/.ocf-shellfuncs
+
+ME=NONEXISTENT
+OTHER=NONEXISTENT
+[ -f "${OCF_RESKEY_config}" ] && . "${OCF_RESKEY_config}"
+
+do_metadata()
+{
+	cat << EOF
+<?xml version="1.0"?>
+<!DOCTYPE resource-agent SYSTEM "ra-api-1.dtd">
+<resource-agent name="Hetzner-failover-ip" version="0.9">
+<version>1.0</version>
+
+<longdesc lang="en">
+Updates DNS record relay for a failover address.
+</longdesc>
+<shortdesc lang="en">DNS updater</shortdesc>
+
+<parameters>
+
+<parameter name="config" unique="1" required="1">
+<longdesc lang="en">
+Configuration file, specifying addresses of the systems and hostname.
+</longdesc>
+<shortdesc lang="en">Configuration file.</shortdesc>
+<content type="string" default="" />
+</parameter>
+
+<parameter name="hostname" unique="1" required="1">
+<longdesc lang="en">
+Hostname associated with the DNS record.
+</longdesc>
+<shortdesc lang="en">Hostname.</shortdesc>
+<content type="string" default="" />
+</parameter>
+
+</parameters>
+
+<actions>
+<action name="start" timeout="300" />
+<action name="stop" timeout="10" />
+<action name="monitor" timeout="30" interval="60" depth="0" start-delay="0" />
+<action name="meta-data" timeout="5" />
+</actions>
+</resource-agent>
+EOF
+}
+
+do_usage()
+{
+	echo "usage: $0 {start|stop|monitor|reload|meta-data|validate-all}"
+}
+
+do_monitor()
+{
+	if grep -q "$ME.*$OCF_RESKEY_hostname" /etc/hosts
+	then
+		return $OCF_SUCCESS
+	fi
+	grep -v "$OCF_RESKEY_hostname" /etc/hosts > /etc/hosts.new
+	echo "$OTHER $OCF_RESKEY_hostname" >> /etc/hosts.new
+	mv /etc/hosts.new /etc/hosts
+	return $OCF_NOT_RUNNING
+}
+
+do_start()
+{
+	grep -v "$OCF_RESKEY_hostname" /etc/hosts > /etc/hosts.new
+	echo "$ME $OCF_RESKEY_hostname" >> /etc/hosts.new
+	mv /etc/hosts.new /etc/hosts
+	return $OCF_SUCCESS
+}
+
+do_stop()
+{
+	grep -v "$OCF_RESKEY_hostname" /etc/hosts > /etc/hosts.new
+	echo "$OTHER $OCF_RESKEY_hostname" >> /etc/hosts.new
+	mv /etc/hosts.new /etc/hosts
+	return $OCF_SUCCESS
+}
+
+case $__OCF_ACTION in
+meta-data)	do_metadata
+		exit $OCF_SUCCESS
+		;;
+monitor)	do_monitor
+		;;
+start)		do_start
+		;;
+stop)		do_stop
+		;;
+*)		do_usage
+		exit $OCF_ERR_UNIMPLEMENTED
+		;;
+esac
+
+rc=$?
+ocf_log debug "${OCF_RESOURCE_INSTANCE} $__OCF_ACTION : $rc"
+exit $rc

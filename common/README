@@ -1,0 +1,9 @@
+This puppet module contains several default defines and classes that are useful
+for the other modules used by Kumina bv. It's layout is derived from David
+Schmitt's common module, as published by himself at [0]. Most of the defines and
+other aspects of this class are taken from older modules developed by and for
+Kumina bv or documentation at one time published by the puppet community.
+
+[0] http://github.com/puppet-modules/puppet-common
+
+# vim:set wm=2 textwidth=80:

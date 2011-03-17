@@ -35,10 +35,19 @@ class munin::client {
 		ensure => installed,
 	}
 
-	if (($operatingsystem == "Debian") and ($operatingsystemrelease == "5.0")) {
+	if (($operatingsystem == "Debian") and (versioncmp($lsbdistrelease,"5.0") >= 0)) { # in Lenny and above we have the extra-plugins in a package
 		package { "munin-plugins-extra":
-			ensure => installed,
+			ensure => latest,
 		}
+	}
+	
+	# Extra plugins
+	file { "/usr/local/share/munin/plugins":
+		recurse => true,
+		source => "puppet://puppet/munin/client/plugins",
+		owner => "root",
+		group => "staff",
+		mode => 755,
 	}
 
 	# Munin node configuration
@@ -66,14 +75,6 @@ class munin::client {
 		group => "staff",
 	}
 
-	# Extra plugins
-	file { "/usr/local/share/munin/plugins":
-		recurse => true,
-		source => "puppet://puppet/munin/client/plugins",
-		owner => "root",
-		group => "staff",
-		mode => 755,
-	}
 
 	# Configs needed for JMX monitoring. Not needed everywhere, but roll out
 	# nontheless.

@@ -22,4 +22,8 @@ fi
 
 fgrep -v "$HOSTNAME" /etc/hosts > /etc/hosts.new
 echo "$ADDR $HOSTNAME" >> /etc/hosts.new
+if ! cmp -s /etc/hosts /etc/hosts.new
+then
+	echo "$0: $HOSTNAME: updating record to address $ADDR" >&2
+fi
 mv /etc/hosts.new /etc/hosts

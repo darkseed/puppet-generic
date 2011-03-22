@@ -42,13 +42,14 @@ class munin::client {
 	}
 	
 	# Extra plugins
-	file { "/usr/local/share/munin/plugins":
-		recurse => true,
-		source => "puppet://puppet/munin/client/plugins",
-		owner => "root",
-		group => "staff",
-		mode => 755,
-	}
+	file {
+		"/usr/local/share/munin/plugins":
+			recurse => true,
+			source => "puppet://puppet/munin/client/plugins",
+			owner => "root",
+			group => "staff",
+			mode => 755;
+}
 
 	# Munin node configuration
 	file { "/etc/munin/munin-node.conf":
@@ -63,10 +64,11 @@ class munin::client {
 		ensure => running,
 	}
 
-	file { "/usr/local/share/munin":
-		ensure => directory,
-		owner => "root",
-		group => "staff",
+	file {
+		"/usr/local/share/munin":
+			ensure => directory,
+			owner => "root",
+			group => "staff";
 	}
 
 	file { "/usr/local/etc/munin":

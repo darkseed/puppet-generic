@@ -171,6 +171,22 @@ class nagios::nrpe::plugins {
 		ensure => latest,
 	}
 
+	check {
+		"pacemaker_config":
+			command => '/usr/local/lib/nagios/plugins/check_pacemaker_config',
+			require => File["/usr/local/lib/nagios/plugins/check_pacemaker_config","/etc/nagios/nrpe.d"];
+	}
+
+	file {
+		"/usr/local/lib/nagios/plugins/check_pacemaker_config":
+			ensure => present,
+			source => "puppet:///modules/nagios/plugins/check_pacemaker_config",
+			owner => "root",
+			group => "staff",
+			mode => 775,
+			require => File["/usr/local/lib/nagios/plugins"];
+	}
+
 	file { "/usr/local/lib/nagios/plugins/check_drbd":
 		source => "puppet://puppet/nagios/plugins/check_drbd",
 		owner => "root",

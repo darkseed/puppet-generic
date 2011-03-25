@@ -114,6 +114,12 @@ class nagios::nrpe::plugins {
 			command => '/usr/bin/sudo /usr/sbin/crm_mon -s';
 	}
 
+	# This should be done by kbp_monitoring::client::pacemaker
+	include kbp_sudo
+	kbp_sudo::add_rule { "pacemaker sudo rules":
+		content => "nagios	ALL=NOPASSWD: /usr/sbin/crm_mon -s";
+	}
+
 	# aMaVis checks
 	check {
 		"amavis_scanner":
@@ -164,7 +170,15 @@ class nagios::nrpe::plugins {
 	check {
 		"sslcert":
 			command => 'sudo /usr/lib/nagios/plugins/check_sslcert -c 7 -w 30 $ARG1$',
-			require => [File["/etc/nagios/nrpe.d"], Package["nagios-plugins-kumina"]];
+			require => [File["/etc/nagios/nrpe.d"], Package["nagios-plugins-kumina"], Kbp_sudo::Add_rule["check_sslcert sudo rules"]];
+	}
+
+	# This should be done by kbp_monitoring::client::sslcert
+	# it does, but it then should be included in kbp-apache and openvpn(and any other module/class using sslcertificates)
+	# For apache, see kumina trac-ticket #566
+	include kbp_sudo
+	kbp_sudo::add_rule { "check_sslcert sudo rules":
+		content => "nagios	ALL=NOPASSWD: /usr/lib/nagios/plugins/check_sslcert";
 	}
 
 	package { "nagios-plugins-kumina":

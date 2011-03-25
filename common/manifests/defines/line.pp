@@ -30,10 +30,7 @@
 #
 
 define line (
-		$ensure = "present", 
-		$file, 
-		$content = false
-	    ) {
+	$ensure = "present", $file, $content = false) {
 
 	if ! $content {
 		$content = $name

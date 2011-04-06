@@ -12,18 +12,17 @@ class nagios::nrpe {
 		}
 	}
 
-	package { "nagios-nrpe-server":
+	kpackage { "nagios-nrpe-server":
 		ensure => installed,
 	}
 
 	# We're starting NRPE from inetd, to allow it to use tcpwrappers for
 	# access control.
 	service { "nagios-nrpe-server":
-		enable => false,
-		ensure => stopped,
-		pattern => "/usr/sbin/nrpe",
+		ensure     => stopped,
+		pattern    => "/usr/sbin/nrpe",
 		hasrestart => true,
-		require => Package["nagios-nrpe-server"],
+		require    => Package["nagios-nrpe-server"],
 	}
 
 	package { "openbsd-inetd":
@@ -181,8 +180,8 @@ class nagios::nrpe::plugins {
 		content => "nagios	ALL=NOPASSWD: /usr/lib/nagios/plugins/check_sslcert";
 	}
 
-	package { "nagios-plugins-kumina":
-		ensure => latest,
+	kpackage { "nagios-plugins-kumina":
+		ensure => latest;
 	}
 
 	check {
@@ -303,6 +302,11 @@ class nagios::nrpe::plugins {
 	check { "status_init":
 		command => "sudo /usr/local/lib/nagios/plugins/check_proc_status.sh \$ARG1\$",
 		require => File["/usr/local/lib/nagios/plugins/check_proc_status.sh"],
+	}
+	# We need root right to do so
+	include kbp_sudo
+	kbp_sudo::add_rule { "check_proc_status.sh sudo rules":
+		content => "nagios	ALL=NOPASSWD: /usr/lib/nagios/plugins/check_proc_status.sh";
 	}
 
 	# This check is so we have a dependency for the backup machine. It checks if

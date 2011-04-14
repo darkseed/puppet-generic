@@ -65,8 +65,8 @@ class offsitebackup::common {
 }
 
 class offsitebackup::client {
-	package { ["offsite-backup","backup-scripts"]:
-		ensure => latest,
+	kpackage { ["offsite-backup","backup-scripts"]:
+		ensure => latest;
 	}
 
 	@@offsitebackup::common::backupkey { "$fqdn":

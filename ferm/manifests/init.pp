@@ -1,7 +1,5 @@
 class ferm {
-	package { "ferm":
-		ensure => installed;
-	}
+	kpackage { "ferm":; }
 
 	exec { "reload-ferm":
 		command     => "/etc/init.d/ferm reload",
@@ -9,10 +7,7 @@ class ferm {
 		refreshonly => true;
 	}
 
-	file { "/etc/ferm/ferm.conf":
-		ensure  => file,
-		mode    => 644,
-		owner   => "root",
+	kfile { "/etc/ferm/ferm.conf":
 		group   => "adm",
 		require => Package["ferm"];
 	}

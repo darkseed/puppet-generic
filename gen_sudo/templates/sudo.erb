@@ -1,0 +1,4 @@
+# <%= the_comment %>
+<% command.each { |the_command| -%>
+<%= entity %> ALL=<%= "("+as_user+")" %> <%= password_required ? "PASSWD:" : "NOPASSWD:" %> <%= the_command %>
+<% } -%>

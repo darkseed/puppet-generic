@@ -50,14 +50,14 @@ class apache {
          'present' : {
             exec { "/usr/sbin/a2enmod $name":
                unless => "/bin/sh -c '[ -L /etc/apache2/mods-enabled/$name.load ] && [ /etc/apache2/mods-enabled/$name.load -ef /etc/apache2/mods-available/$name.load ]'",
-               notify => Exec["force-reload-apache2"],
+               notify => Exec["force-reload-apache2","reload-apache2"],
                require => Package["apache2"],
             }
          }
          'absent': {
             exec { "/usr/sbin/a2dismod $name":
                onlyif => "/bin/sh -c '[ -L /etc/apache2/mods-enabled/$name.load ] && [ /etc/apache2/mods-enabled/$name.load -ef /etc/apache2/mods-available/$name.load ]'",
-               notify => Exec["force-reload-apache2"],
+               notify => Exec["force-reload-apache2","reload-apache2"],
                require => Package["apache2"],
             }
          }
@@ -66,7 +66,7 @@ class apache {
    }
 
    # Let's make sure we've got apache2 installed
-   package { "apache2":
+   kpackage { "apache2":
         ensure => installed,
    }
 
@@ -86,10 +86,11 @@ class apache {
         refreshonly => true,
    }
 
-   exec { "force-reload-apache2":
-      command => "/etc/init.d/apache2 force-reload",
-      refreshonly => true,
-   }
+	exec { "force-reload-apache2":
+		command     => "/etc/init.d/apache2 force-reload",
+		refreshonly => true,
+		require     => Exec["reload-apache2"];
+	}
 
    file { "/etc/apache2/conf.d":
       recurse => true,

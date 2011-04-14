@@ -1,4 +1,2 @@
-<% if comment and not comment.empty? -%>
-# <%= comment %>
-<% end -%>
+<% if comment %># <%= comment %><% end %>
 <%= sourcetype %>	<%= uri %>	<%= distribution %>	<%= components.to_a.join(" ") %>

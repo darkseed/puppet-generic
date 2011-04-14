@@ -1,0 +1,6 @@
+# The files in this directory are maintained using Puppet.
+#
+# Please keep in mind that all files in /etc are maintained by
+# Kumina bv. Any changes needed can be requested via email to
+# support@kumina.nl. Please clearly state which host(s) you are
+# requesting the change for.

@@ -1,0 +1,43 @@
+#!/bin/sh
+# 
+# Plugin to monitor the number of open files in the system by user.
+#  copyied for the files_ plugin
+#
+# Parameters:
+# 	
+# 	config   (required)
+# 	autoconf (optional - used by munin-config)
+#
+# Magic markers (Used by munin-config and some installation scripts.
+# Optional):
+#
+#%# family=contrib
+#%# capabilities=autoconf
+
+
+U=`basename $0 | sed 's/^files_user_//g'`
+LSOF=`which lsof`
+LIMIT=`ulimit -Hn`
+
+if [ "$1" = "autoconf" ]; then
+	if [ -x $LSOF ]; then
+		echo yes
+		exit 0
+	else
+		echo no
+		exit 1
+	fi
+fi
+
+if [ "$1" = "config" ]; then
+
+	echo 'graph_title user '$U' open files usage'
+	echo "graph_args --base 1000 -l 0 -u ${LIMIT}"
+	echo 'graph_vlabel number of open files for '$U
+	echo 'graph_category system'
+	echo 'openfiles.label '$U' file count'
+	ulimit -Hn | awk  '{printf "openfiles.warning %d\nopenfiles.critical %d\n",$1*0.92,$1*0.96}'
+	exit 0
+fi
+
+$LSOF -u $U | wc -l | awk '{ C=$1-1 } END { printf "openfiles.value %d\n", C} ' 

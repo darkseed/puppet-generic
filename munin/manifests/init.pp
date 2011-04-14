@@ -31,13 +31,11 @@ class munin::client {
 		}
 	}
 
-	package { "munin-node":
-		ensure => installed,
-	}
+	kpackage { "munin-node":; }
 
 	if (($operatingsystem == "Debian") and (versioncmp($lsbdistrelease,"5.0") >= 0)) { # in Lenny and above we have the extra-plugins in a package
-		package { "munin-plugins-extra":
-			ensure => latest,
+		kpackage { "munin-plugins-extra":
+			ensure => latest;
 		}
 	}
 	

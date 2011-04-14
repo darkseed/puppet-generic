@@ -25,15 +25,15 @@ class nullmailer {
 
 	file {
 		"/etc/nullmailer/adminaddr":
-			content => "$mail_catchall\n",
+			content => "${mail_catchall}\n",
 			notify => Service["nullmailer"],
 			require => Package["nullmailer"];
 		"/etc/nullmailer/remotes":
-			content => "$mail_relay\n",
+			content => "${mail_relay}\n",
 			notify => Service["nullmailer"],
 			require => Package["nullmailer"];
 		"/etc/mailname":
-			content => "$fqdn\n",
+			content => "${fqdn}\n",
 			notify => Service["nullmailer"],
 			require => Package["nullmailer"];
 	}

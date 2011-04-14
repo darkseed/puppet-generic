@@ -114,9 +114,12 @@ class nagios::nrpe::plugins {
 	}
 
 	# This should be done by kbp_monitoring::client::pacemaker
-	include kbp_sudo
-	kbp_sudo::add_rule { "pacemaker sudo rules":
-		content => "nagios	ALL=NOPASSWD: /usr/sbin/crm_mon -s";
+	include gen_sudo
+	gen_sudo::rule { "pacemaker sudo rules":
+		entity => "nagios",
+		as_user => "root",
+		command => "/usr/sbin/crm_mon -s",
+		password_required => false;
 	}
 
 	# aMaVis checks
@@ -148,6 +151,14 @@ class nagios::nrpe::plugins {
 			require => File["/etc/nagios/nrpe.d"];
 	}
 
+	include gen_sudo
+	gen_sudo::rule { "Nagios can run all plugins as root":
+		entity => "nagios",
+		as_user => "ALL",
+		password_required => false,
+		command => ["/usr/lib/nagios/plugins/", "/usr/local/lib/nagios/plugins/"];
+	}
+
 	if versioncmp($lsbdistrelease, "6.0") >= 0 { #squeeze or later
 		check{
 			"dhcpd":
@@ -169,15 +180,7 @@ class nagios::nrpe::plugins {
 	check {
 		"sslcert":
 			command => 'sudo /usr/lib/nagios/plugins/check_sslcert -c 7 -w 30 $ARG1$',
-			require => [File["/etc/nagios/nrpe.d"], Package["nagios-plugins-kumina"], Kbp_sudo::Add_rule["check_sslcert sudo rules"]];
-	}
-
-	# This should be done by kbp_monitoring::client::sslcert
-	# it does, but it then should be included in kbp-apache and openvpn(and any other module/class using sslcertificates)
-	# For apache, see kumina trac-ticket #566
-	include kbp_sudo
-	kbp_sudo::add_rule { "check_sslcert sudo rules":
-		content => "nagios	ALL=NOPASSWD: /usr/lib/nagios/plugins/check_sslcert";
+			require => [File["/etc/nagios/nrpe.d"], Package["nagios-plugins-kumina"]];
 	}
 
 	kpackage { "nagios-plugins-kumina":
@@ -302,11 +305,6 @@ class nagios::nrpe::plugins {
 	check { "status_init":
 		command => "sudo /usr/local/lib/nagios/plugins/check_proc_status.sh \$ARG1\$",
 		require => File["/usr/local/lib/nagios/plugins/check_proc_status.sh"],
-	}
-	# We need root right to do so
-	include kbp_sudo
-	kbp_sudo::add_rule { "check_proc_status.sh sudo rules":
-		content => "nagios	ALL=NOPASSWD: /usr/lib/nagios/plugins/check_proc_status.sh";
 	}
 
 	# This check is so we have a dependency for the backup machine. It checks if

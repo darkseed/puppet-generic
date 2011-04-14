@@ -1,0 +1,3 @@
+Package: <% if package %><%= package %><% else %><%= name %><% end %>
+Pin: release a=<%= use_repo %>
+Pin-Priority: <%= prio %>

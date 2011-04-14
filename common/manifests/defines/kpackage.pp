@@ -1,4 +1,4 @@
-define kpackage ($ensure="present", $responsefile=false, $require=false, $tag=false) {
+define kpackage ($ensure="present", $responsefile=false, $tag=false) {
 	package { "${name}":
 		ensure       => $ensure,
 		responsefile => $responsefile ? {

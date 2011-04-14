@@ -82,9 +82,9 @@
 #  - The final file can be referened as File["/path/to/file"] or File["concat_/path/to/file"]  
 define concat($mode = 0644, $owner = "root", $group = "root", $warn = "false", $force = "false") {
     $safe_name = regsubst($name, '/', '_', 'G')
-    $concatdir = $common::concat::setup::concatdir
-    $version   = $common::concat::setup::majorversion
-    $sort      = $common::concat::setup::sort
+    $concatdir = $gen_puppet::concat::setup::concatdir
+    $version   = $gen_puppet::concat::setup::majorversion
+    $sort      = $gen_puppet::concat::setup::sort
     $fragdir   = "${concatdir}/${safe_name}"
 
     $warnflag = $warn ? {
@@ -160,7 +160,7 @@ define concat($mode = 0644, $owner = "root", $group = "root", $warn = "false", $
 define concat::fragment($target, $content='', $source='', $order=10, $ensure = "present", $mode = 0644, $owner = root, $group = root) {
     $safe_target_name = regsubst($target, '/', '_', 'G')
     $safe_name = regsubst($name, '/', '_', 'G')
-    $concatdir = $common::concat::setup::concatdir
+    $concatdir = $gen_puppet::concat::setup::concatdir
     $fragdir = "${concatdir}/${safe_target_name}"
 
     # if content is passed, use that, else if source is passed use that
@@ -206,7 +206,7 @@ define concat::fragment($target, $content='', $source='', $order=10, $ensure = "
 # $sort keeps the path to the unix sort utility
 #
 # It also copies out the concatfragments.sh file to /usr/local/bin
-class common::concat::setup {
+class gen_puppet::concat::setup {
     $concatdir = "/var/lib/puppet/concat"
     $majorversion = regsubst($puppetversion, '^[0-9]+[.]([0-9]+)[.][0-9]+$', '\1')
     $sort = "/usr/bin/sort"
@@ -217,7 +217,7 @@ class common::concat::setup {
             mode   => 755,
             source => $majorversion ? {
                         24      => "puppet:///concat/concatfragments.sh",
-                        default => "puppet:///modules/common/concat/concatfragments.sh"
+                        default => "puppet:///modules/gen_puppet/concat/concatfragments.sh"
                       };
 
          $concatdir: 
@@ -227,3 +227,20 @@ class common::concat::setup {
             mode   => 755;
     }
 }
+class gen_puppet::concat {
+        include gen_puppet::concat::setup
+
+        define add_content($target, $content, $order=15) {
+                $body = $content ? {
+                        false   => $name,
+                        default => $content,
+                }
+
+                concat::fragment{ "${target}_fragment_${name}":
+                        content => "${body}\n",
+                        target  => $target,
+                        order   => $order;
+                        }
+                }
+}
+

@@ -4,37 +4,28 @@ class mysql::server {
 		"squeeze": { $mysqlserver = "mysql-server-5.1" }
 	}
 
-	package { "$mysqlserver":
-		ensure => installed,
-	}
+	kpackage { "$mysqlserver":; }
 
 	service { "mysql":
 		hasrestart => true,
 		hasstatus => true,
 	}
 
-	file { "/etc/mysql/my.cnf":
-		content => template("mysql/my.cnf"),
-		owner => root,
-		group => root,
-		mode => 0640,
-	}
-
-	file { "/etc/mysql/conf.d":
-		ensure => directory,
-		mode => 750,
-		owner => "root",
-		group => "root",
-		require => Package["$mysqlserver"],
+	kfile {
+		"/etc/mysql/my.cnf":
+			content => template("mysql/my.cnf"),
+			mode    => 0640,
+			require => Package["${mysqlserver}"];
+		"/etc/mysql/conf.d":
+			ensure  => directory,
+			mode    => 0750,
+			require => Package["${mysqlserver}"];
 	}
 
 	if ($mysql_serverid) {
-		file { "/etc/mysql/conf.d/server-id.cnf":
-			mode => 644,
-			owner => "root",
-			group => "root",
+		kfile { "/etc/mysql/conf.d/server-id.cnf":
 			content => "[mysqld]\nserver-id = $mysql_serverid\n",
-			notify => Service["mysql"],
+			notify  => Service["mysql"];
 		}
 	}
 
@@ -62,6 +53,22 @@ class mysql::server {
                 content => "[mysqld]\ninnodb_file_per_table\n",
                 notify  => Service["mysql"],
         }
+
+	define db {
+		exec { "create-${name}-db":
+			unless  => "/usr/bin/mysql --defaults-file=/etc/mysql/debian.cnf ${name}",
+			command => "/usr/bin/mysql --defaults-file=/etc/mysql/debian.cnf -e \"create database ${name};\"",
+			require => Service["mysql"];
+		}
+	}
+
+	define grant($user, $password, $permissions="all") {
+		exec { "grant-${user}-db":
+			unless  => "/usr/bin/mysql -u ${user} -p${password} ${name}",
+			command => "/usr/bin/mysql --defaults-file=/etc/mysql/debian.cnf -e \"grant ${permissions} on ${name}.* to ${user}@localhost identified by '${password}';\"",
+			require => [Service["mysql"], Exec["create-${name}-db"]];
+		}
+	}
 }
 
 class mysql::slave inherits mysql::server {
